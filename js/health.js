@@ -7,27 +7,37 @@
 
 const AED_URL = 'https://www.ha.org.hk/opendata/aed/aedwtdata2-tc.json';
 
+let aedSortAsc = true;
+let aedMiniSortAsc = false;
+
 /* ── Hospital region map ─────────────────────────────────────── */
 const HOSP_REGION = {
-  '\u5ee3\u83ef\u91ab\u9662':    '\u4e5d\u9f8d',
-  '\u57fa\u7763\u6559\u806f\u5408\u91ab\u9662': '\u4e5d\u9f8d',
-  '\u5929\u6c34\u570d\u91ab\u9662':  '\u65b0\u754c',
-  '\u5c6f\u9580\u91ab\u9662':    '\u65b0\u754c',
-  '\u535a\u611b\u91ab\u9662':    '\u65b0\u754c',
-  '\u5317\u5340\u91ab\u9662':    '\u65b0\u754c',
-  '\u5a01\u723e\u65af\u89aa\u738b\u91ab\u9662': '\u65b0\u754c',
-  '\u96c5\u9e97\u6c0f\u4f55\u5999\u9f61\u90a3\u6253\u7d20\u91ab\u9662': '\u65b0\u754c',
-  '\u4f0a\u5229\u6c99\u4f2f\u90a3\u91ab\u9662': '\u4e5d\u9f8d',
-  '\u746a\u5564\u83ef\u91ab\u9662':  '\u65b0\u754c',
-  '\u4ec1\u6fdf\u91ab\u9662':    '\u65b0\u754c',
-  '\u746a\u9e97\u91ab\u9662':    '\u6e2f\u5cf6',
-  '\u5f8b\u6566\u6cbb\u53ca\u9127\u8fdc\u5805\u91ab\u9662': '\u6e2f\u5cf6',
-  '\u6771\u5340\u5c24\u5fb7\u592b\u4eba\u90a3\u6253\u7d20\u91ab\u9662': '\u6e2f\u5cf6',
-  '\u660e\u611b\u91ab\u9662':    '\u4e5d\u9f8d',
-  '\u9999\u6e2f\u4f5b\u6559\u91ab\u9662': '\u4e5d\u9f8d',
-  '\u5c07\u8ecd\u6fb3\u91ab\u9662':  '\u65b0\u754c',
-  '\u806f\u5408\u91ab\u9662':    '\u4e5d\u9f8d',
-};
+  // 港島
+  '\u746a\u9e97\u91ab\u9662': '\u6e2f\u5cf6', // 瑪麗醫院
+
+  // 九龍
+  '\u5ee3\u83ef\u91ab\u9662': '\u4e5d\u9f8d', // 廣華醫院
+  '\u660e\u611b\u91ab\u9662': '\u4e5d\u9f8d', // 明愛醫院
+  '\u57fa\u7763\u6559\u806f\u5408\u91ab\u9662': '\u4e5d\u9f8d', // 基督教聯合醫院
+
+  // 新界
+  '\u5a01\u723e\u65af\u89aa\u738b\u91ab\u9662': '\u65b0\u754c', // 威爾斯親王醫院
+  '\u4ec1\u6fdf\u91ab\u9662': '\u65b0\u754c', // 仁濟醫院
+  '\u5c6f\u9580\u91ab\u9662': '\u65b0\u754c', // 屯門醫院
+  '\u535a\u611b\u91ab\u9662': '\u65b0\u754c', // 博愛醫院
+  '\u5929\u6c34\u570d\u91ab\u9662': '\u65b0\u754c', // 天水圍醫院
+  '\u5c07\u8ecd\u6fb3\u91ab\u9662': '\u65b0\u754c', // 將軍澳醫院
+  '\u96c5\u9e97\u6c0f\u4f55\u5999\u9f61\u90a3\u6253\u7d20\u91ab\u9662': '\u65b0\u754c', // 雅麗氏何妙齡那打素醫院
+  '\u9577\u6d32\u91ab\u9662': '\u65b0\u754c', // 長洲醫院
+
+  // 其他
+  '\u746a\u5564\u83ef\u91ab\u9662': '\u54fb\u53e6', // 瑪嘉烈醫院
+  '\u4f0a\u5229\u6c99\u4f2f\u90a3\u91ab\u9662': '\u54fb\u53e6', // 伊利沙伯醫院
+  '\u5317\u5927\u5d61\u5c71\u91ab\u9662': '\u54fb\u53e6', // 北大嶼山醫院
+  '\u6771\u5340\u5c2b\u5fb7\u592b\u4eba\u90a3\u6253\u7d20\u91ab\u9662': '\u54fb\u53e6', // 東區尤德夫人那打素醫院
+  '\u5314\u5340\u91ab\u9662': '\u54fb\u53e6', // 北區醫院
+  '\u5f8b\u6566\u6cbb\u53ca\u9127\u8fdc\u5805\u91ab\u9662': '\u54fb\u53e6', // 律敦治醫院
+};;
 
 /* ── Wait time string → minutes (for colour coding) ─────────── */
 function parseWaitMins(str) {
@@ -57,9 +67,11 @@ async function fetchAED() {
   const fullEl  = document.getElementById('h-aed-full');
   const updEl   = document.getElementById('h-aed-upd');
   const miniEl  = document.getElementById('h-aed-content');
+  const healthMiniEl = document.getElementById('h-aed-content-health-mini');
 
   if (fullEl) fullEl.innerHTML = skelHtml(3);
   if (miniEl) miniEl.innerHTML = skelHtml(3);
+  // healthMiniEl skeleton is cleared inside the handler below
 
   try {
     const res = await fetch(AED_URL);
@@ -74,9 +86,58 @@ async function fetchAED() {
       updEl.textContent = upd ? rtFn(upd) : '';
     }
 
-    // Home mini — show 5 hospitals
+    // Home mini — show 10 hospitals with longest wait times
     if (miniEl && list.length) {
-      miniEl.innerHTML = list.slice(0, 5).map(h => renderAedRow(h)).join('');
+      const sortedList = [...list].sort((a, b) => {
+        const timeA = parseWaitMins(a.t45p50) || 0;
+        const timeB = parseWaitMins(b.t45p50) || 0;
+        return timeB - timeA;
+      });
+      miniEl.innerHTML = sortedList.slice(0, 10).map(h => renderAedRow(h)).join('');
+    }
+
+    // Health page mini — also show 5 hospitals with longest wait times
+    if (healthMiniEl && list.length) {
+      // Clear skeleton HTML first
+      healthMiniEl.innerHTML = '';
+      
+      // 1. Handle the sort button separately from the list content
+      let btn = document.getElementById('aed-mini-sort-btn');
+      if (!btn) {
+        btn = document.createElement('button');
+        btn.id = 'aed-mini-sort-btn';
+        btn.className = 'btn-sort';
+        btn.textContent = '⇅ 排序';
+        btn.style.cssText = 'margin-bottom:var(--sp-3);display:block;width:fit-content;margin-left:auto;';
+        
+        btn.onclick = (e) => {
+          e.preventDefault();
+          aedMiniSortAsc = !aedMiniSortAsc;
+          fetchAED();
+        };
+        
+        healthMiniEl.appendChild(btn);
+        
+        const container = document.createElement('div');
+        container.id = 'aed-mini-list-container';
+        healthMiniEl.appendChild(container);
+      } else {
+        // Re-append button and container to the cleared element
+        const container = document.getElementById('aed-mini-list-container');
+        healthMiniEl.appendChild(btn);
+        if (container) healthMiniEl.appendChild(container);
+      }
+
+      const sortedList = [...list].sort((a, b) => {
+        const timeA = parseWaitMins(a.t45p50) || 0;
+        const timeB = parseWaitMins(b.t45p50) || 0;
+        return aedMiniSortAsc ? timeA - timeB : timeB - timeA;
+      });
+      
+      const listCont = document.getElementById('aed-mini-list-container');
+      if (listCont) {
+        listCont.innerHTML = sortedList.slice(0, 18).map(h => renderAedRow(h)).join('');
+      }
     }
 
     // Full page — all hospitals grouped by region
@@ -90,25 +151,56 @@ async function fetchAED() {
 
       let html = '';
       const order = ['港島', '九龍', '新界', '其他'];
+      
+      // Define the desired order of hospitals within each region
+      const hospitalOrder = {
+        '港島': ['瑪麗醫院'],
+        '九龍': ['廣華醫院', '明愛醫院', '基督教聯合醫院'],
+        '新界': ['威爾斯親王醫院', '仁濟醫院', '屯門醫院', '博愛醫院', '天水圍醫院', '將軍澳醫院', '雅麗氏何妙齡那打素醫院', '長洲醫院'],
+        '其他': ['瑪嘉烈醫院', '伊利沙伯醫院', '北大嶼山醫院', '東區尤德夫人那打素醫院', '北區醫院', '律敦治醫院']
+      };
+
       for (const reg of order) {
         if (!grouped[reg]) continue;
+        
+        // Sort hospitals in this region based on the defined order
+        const regionHospitals = grouped[reg].sort((a, b) => {
+          const orderList = hospitalOrder[reg] || [];
+          const indexA = orderList.indexOf(a.hospName);
+          const indexB = orderList.indexOf(b.hospName);
+          
+          let result = 0;
+          // If both are in the list, sort by list index
+          if (indexA !== -1 && indexB !== -1) result = indexA - indexB;
+          // If only one is in the list, put it first
+          else if (indexA !== -1) result = -1;
+          else if (indexB !== -1) result = 1;
+          // Otherwise, maintain original order (or alphabetical)
+          else result = a.hospName.localeCompare(b.hospName);
+
+          return aedSortAsc ? -result : result;
+        });
+
         html += '<div style="grid-column:1/-1;font-size:var(--text-xs);font-weight:700;color:var(--primary);margin:var(--sp-2) 0 4px;text-transform:uppercase;letter-spacing:.05em">' + reg + '</div>';
-        html += grouped[reg].map(h => renderAedCard(h)).join('');
+        html += regionHospitals.map(h => renderAedCard(h)).join('');
       }
+      
       fullEl.innerHTML = html;
     }
 
-    if (!list.length) {
-      if (fullEl) fullEl.innerHTML = '<div style="color:var(--text-faint)">暫無急症室等候資料</div>';
-      if (miniEl) miniEl.innerHTML = '<div style="color:var(--text-faint)">暫無資料</div>';
-    }
-  } catch (e) {
-    console.error('AED fetch error:', e);
-    const errMsg = '<div class="row-item"><span style="color:var(--error)">無法載入急症室等候資料</span></div>';
-    if (fullEl) fullEl.innerHTML = errMsg;
-    if (miniEl) miniEl.innerHTML = errMsg;
-  }
-}
+     if (!list.length) {
+       if (fullEl) fullEl.innerHTML = '<div style="color:var(--text-faint)">暫無急症室等候資料</div>';
+       if (miniEl) miniEl.innerHTML = '<div style="color:var(--text-faint)">暫無資料</div>';
+       if (healthMiniEl) healthMiniEl.innerHTML = '<div style="color:var(--text-faint)">暫無資料</div>';
+     }
+   } catch (e) {
+     console.error('AED fetch error:', e);
+     const errMsg = '<div class="row-item"><span style="color:var(--error)">無法載入急症室等候資料</span></div>';
+     if (fullEl) fullEl.innerHTML = errMsg;
+     if (miniEl) miniEl.innerHTML = errMsg;
+     if (healthMiniEl) healthMiniEl.innerHTML = errMsg;
+   }
+ }
 
 /* ── Row renderer (home mini) ────────────────────────────────── */
 function renderAedRow(h) {

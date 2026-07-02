@@ -10,16 +10,24 @@ const Tides = (function() {
 
   /* ── Tide stations ──────────────────────────────────────────── */
   const STATIONS = [
-    { code:'CCH', name:'鰂魚涌 Quarry Bay' },
-    { code:'CLK', name:'赤鱲角 Chek Lap Kok' },
-    { code:'KCT', name:'昂船洲 Stonecutters Is.' },
-    { code:'MWC', name:'馬灣 Ma Wan' },
-    { code:'TBT', name:'大埔滘 Tai Po Kau' },
-    { code:'TPK', name:'塔門 Tap Mun' },
-    { code:'TMW', name:'屯門 Tuen Mun' },
+    { code: 'CLK', name: '赤鱲角 (東) Chek Lap Kok (E)' },
+    { code: 'CCH', name: '長洲 Cheung Chau' },
+    { code: 'CMW', name: '芝麻灣 Chi Ma Wan' },
+    { code: 'KLW', name: '高流灣 Ko Lau Wan' },
+    { code: 'KCT', name: '葵涌 Kwai Chung' },
+    { code: 'LOP', name: '樂安排 Lok On Pai' },
+    { code: 'MWC', name: '馬灣 Ma Wan' },
+    { code: 'QUB', name: '鰂魚涌 Quarry Bay' },
+    { code: 'SPW', name: '石壁 Shek Pik' },
+    { code: 'TAO', name: '大澳 Tai O' },
+    { code: 'TMW', name: '大廟灣 Tai Miu Wan' },
+    { code: 'TPK', name: '大埔滘 Tai Po Kau' },
+    { code: 'TBT', name: '尖鼻咀 Tsim Bei Tsui' },
+    { code: 'WAG', name: '橫瀾島 Waglan Island' }
+    
   ];
 
-  let _currentStation = 'TMW';
+  let _currentStation = 'MWC';
 
   /* ── Fetch current month tide data ──────────────────────────── */
   async function fetchTideData(station) {

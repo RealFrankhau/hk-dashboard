@@ -153,6 +153,7 @@ window.showPage = function(name) {
   switch (name) {
     case 'weather':
       safeRun('Weather', () => Weather.refresh());
+      safeRun('Tides', () => Tides.refresh());
       loadWeatherForecastText();
       break;
     case 'transport':

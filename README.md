@@ -12,7 +12,7 @@
 
 A comprehensive, real-time open-source city dashboard for Hong Kong using 100% government open data APIs
 
-[🌐 Live Demo](https://github.com/badboyhong/hk-dashboard) · [📱 Install as App](#pwa) · [🐛 Report Bug](https://github.com/badboyhong/hk-dashboard/issues) · [💡 Request Feature](https://github.com/badboyhong/hk-dashboard/issues)
+[🌐 Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) · [📱 Install as App](#pwa) · [🐛 Report Bug](https://github.com/badboyhong/hk-dashboard/issues) · [💡 Request Feature](https://github.com/badboyhong/hk-dashboard/issues)
 
 </div>
 
@@ -156,7 +156,7 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 ## 🚀 Quick Start · 快速開始
 
 ### 直接使用
-打開 [Live Demo](https://github.com/badboyhong/hk-dashboard) 即可，無需安裝。
+打開 [Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) 即可，無需安裝。
 
 ### 本地運行
 ```bash

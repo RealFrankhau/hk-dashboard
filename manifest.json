@@ -1,7 +1,7 @@
 {
   "name": "香港城市儀表板",
   "short_name": "HK Dashboard",
-  "description": "香港全方位實時城市數據：天氣、交通、巴士、泳灘、停車場",
+  "description": "香港全方位實時城市數據：天氣、交通、巴士、地鐵、急證室、公眾假期",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0d1b2e",
@@ -24,7 +24,7 @@
   "categories": ["utilities", "weather", "travel"],
   "shortcuts": [
     { "name": "天氣",   "url": "/index.html#weather",   "description": "查看天氣" },
-    { "name": "巴士",   "url": "/index.html#bus",        "description": "巴士到站" },
-    { "name": "停車場", "url": "/index.html#parking",    "description": "停車場空位" }
+    { "name": "急症室",   "url": "/index.html#health",        "description": "急症室資訊" },
+    { "name": "假期", "url": "/index.html#holidays",    "description": "公眾假期" }
   ]
 }

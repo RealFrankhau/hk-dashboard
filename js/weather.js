@@ -33,6 +33,42 @@ window.relativeTime = relativeTime;
 const WX_BASE = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php';
 const ICON_BASE = 'https://www.hko.gov.hk/images/HKOWxIconOutline/pic';
 
+function getWarningIconUrl(icon) {
+  if (!icon) return '';
+  if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('/') || icon.startsWith('./') || icon.startsWith('assets/')) return icon;
+  return `${ICON_BASE}/${icon}.png`;
+}
+
+/* ── Warning icon map (HKO official warnlegend) ───────────── */
+const WX_WARN_MAP = {
+  'TC1': { text: '一號戒備信號', icon: './assets/icons/tc1.gif' },
+  'TC3': { text: '三號強風信號', icon: './assets/icons/tc3.gif' },
+  'TC8NE': { text: '八號東北烈風或暴風信號', icon: './assets/icons/tc8ne.gif' },
+  'TC8NW': { text: '八號西北烈風或暴風信號', icon: './assets/icons/tc8d.gif' },
+  'TC8SE': { text: '八號東南烈風或暴風信號', icon: './assets/icons/tc8b.gif' },
+  'TC8SW': { text: '八號西南烈風或暴風信號', icon: './assets/icons/tc8c.gif' },
+  'TC9': { text: '九號烈風或暴風風力增強信號', icon: './assets/icons/tc9.gif' },
+  'TC10': { text: '十號颶風信號', icon: './assets/icons/tc10.gif' },
+  'WRAINA': { text: '黃色暴雨警告信號', icon: './assets/icons/raina.gif' },
+  'WRAINR': { text: '紅色暴雨警告信號', icon: './assets/icons/rainr.gif' },
+  'WRAINB': { text: '黑色暴雨警告信號', icon: './assets/icons/rainb.gif' },
+  'WTS': { text: '雷暴警告', icon: './assets/icons/ts.gif' },
+  'WFNTSA': { text: '新界北部水浸特別報告', icon: './assets/icons/ntfl.gif' },
+  'WL': { text: '山泥傾瀉警告', icon: './assets/icons/landslip.gif' },
+  'WMSGNL': { text: '強烈季候風信號', icon: './assets/icons/sms.gif' },
+  'WCOLD': { text: '寒冷天氣警告', icon: './assets/icons/cold.gif' },
+  'WHOT': { text: '酷熱天氣警告', icon: './assets/icons/vhot.gif' },
+  'WFROST': { text: '霜凍警告', icon: './assets/icons/frost.gif' },
+  'WFIREY': { text: '黃色火災危險警告', icon: './assets/icons/firey.gif' },
+  'WFIRER': { text: '紅色火災危險警告', icon: './assets/icons/firer.gif' },
+  'WTMW': { text: '海嘯警告', icon: './assets/icons/tsunami-warn.gif' },
+  // Legacy / fallback codes used by warnsum API
+  'WTCSGNL': { text: '熱帶氣旋信號', icon: './assets/icons/tc1.gif' },
+  'WRAIN': { text: '暴雨警告', icon: './assets/icons/rainr.gif' },
+  'WTHUNDER': { text: '雷暴警告', icon: './assets/icons/ts.gif' },
+  'WFIRE': { text: '火災危險警告', icon: './assets/icons/firey.gif' },
+};
+
 /* ── Weather icon description map ─────────────────────────── */
 const WX_DESC = {
   50:'晴天', 51:'間有陽光', 52:'短暫陽光', 53:'多雲', 54:'多雲幾陣雨',
@@ -99,15 +135,27 @@ function renderCurrentWeather(d) {
   // Warnings
   const warnArr = d.warningMessage || [];
   const warnText = Array.isArray(warnArr) ? warnArr.join(' ') : warnArr;
+  
+  let warnHtml = '';
+  if (warnText && warnText.trim()) {
+    const codes = warnText.split(' ');
+    warnHtml = codes.map(code => {
+      const info = WX_WARN_MAP[code];
+      if (!info) return code;
+      const imgUrl = getWarningIconUrl(info.icon);
+      return `<img src="${imgUrl}" alt="${info.text}" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">${info.text}`;
+    }).join(' <span style="margin:0 4px;color:var(--text-faint)">|</span> ');
+  }
+
   const hWarn = document.getElementById('h-warn');
   const hWarnText = document.getElementById('h-warn-text');
   const wWarnWrap = document.getElementById('w-warn-wrap');
   const wWarn = document.getElementById('w-warn');
-  if (warnText && warnText.trim()) {
+  if (warnHtml) {
     if (hWarn) hWarn.classList.remove('hidden');
-    if (hWarnText) hWarnText.textContent = warnText;
+    if (hWarnText) hWarnText.innerHTML = warnHtml;
     if (wWarnWrap) wWarnWrap.style.display = '';
-    if (wWarn) wWarn.textContent = warnText;
+    if (wWarn) wWarn.innerHTML = warnHtml;
   } else {
     if (hWarn) hWarn.classList.add('hidden');
     if (wWarnWrap) wWarnWrap.style.display = 'none';
@@ -119,6 +167,7 @@ function renderCurrentWeather(d) {
   renderRainfall(rain, 'w-rain');
 
   // Temperature stations
+  window.__tempData = temps;
   renderTemps(temps, 'h-temps');
   renderTemps(temps, 'w-temps');
 }
@@ -134,27 +183,132 @@ function renderRainfall(rain, elId) {
     el.innerHTML = '<div style="color:var(--text-faint);font-size:var(--text-sm)">暫無降雨數據</div>';
     return;
   }
-  el.innerHTML = rain.map(r => {
-    const mm = r.max ?? r.value ?? 0;
-    const hasRain = mm > 0;
-    return `<div class="row-item" style="flex-direction:column;align-items:flex-start;gap:2px">
-      <span style="font-size:var(--text-xs);color:var(--text-muted)">${r.place}</span>
-      <span style="font-weight:600;color:${hasRain ? 'var(--info)' : 'var(--text-faint)'}">${mm} <span style="font-size:10px;font-weight:400">mm</span></span>
-    </div>`;
+
+  const REGION_MAP = {
+    '中西區': '港島', '東區': '港島', '南區': '港島', '灣仔': '港島',
+    '油尖旺': '九龍', '深水埗': '九龍', '九龍城': '九龍',
+    '黃大仙': '九龍', '觀塘': '九龍',
+    '葵青': '新界', '北區': '新界', '西貢': '新界', '沙田': '新界',
+    '大埔': '新界', '荃灣': '新界', '屯門': '新界', '元朗': '新界',
+    '離島區': '離島',
+  };
+  const REGION_ORDER = ['港島', '九龍', '新界', '離島'];
+  const REGION_ICON = { '港島': '🏝️', '九龍': '🏙️', '新界': '🌳', '離島': '🏖️' };
+
+  // Group rain by region
+  const groups = {};
+  for (const r of rain) {
+    const region = REGION_MAP[r.place] || '其他';
+    if (!groups[region]) groups[region] = [];
+    groups[region].push(r);
+  }
+
+  // Sort items within each region by rainfall amount descending
+  for (const region of Object.keys(groups)) {
+    groups[region].sort((a, b) => {
+      const mmA = a.max ?? a.value ?? 0;
+      const mmB = b.max ?? b.value ?? 0;
+      return mmB - mmA;
+    });
+  }
+
+  // Build HTML in region order
+  const html = REGION_ORDER.map(region => {
+    const items = groups[region];
+    if (!items || !items.length) return '';
+    return `
+      <div style="grid-column:1/-1;margin-top:8px;font-size:var(--text-xs);font-weight:700;color:var(--text-muted);letter-spacing:0.5px;border-bottom:1px solid var(--border);padding-bottom:4px">
+        ${REGION_ICON[region] || ''} ${region}
+      </div>
+      ${items.map(r => {
+        const mm = r.max ?? r.value ?? 0;
+        const hasRain = mm > 0;
+        return `<div class="row-item" style="flex-direction:column;align-items:flex-start;gap:2px">
+          <span style="font-size:var(--text-xs);color:var(--text-muted)">${r.place}</span>
+          <span style="font-weight:600;color:${hasRain ? 'var(--info)' : 'var(--text-faint)'}">${mm} <span style="font-size:10px;font-weight:400">mm</span></span>
+        </div>`;
+      }).join('')}
+    `;
   }).join('');
+
+  el.innerHTML = html;
 }
+
+/* ── Temperature sort state ──────────────────────────────────── */
+let tempSortAsc = false;  // false = descending (high→low), true = ascending (low→high)
 
 function renderTemps(temps, elId) {
   const el = document.getElementById(elId);
   if (!el) return;
   if (!temps.length) return;
-  el.innerHTML = temps.map(t => {
-    const val = t.value ?? '--';
-    return `<div class="row-item" style="flex-direction:column;align-items:flex-start;gap:2px">
-      <span style="font-size:var(--text-xs);color:var(--text-muted)">${t.place}</span>
-      <span style="font-weight:600">${val}<span style="font-size:10px;color:var(--text-faint)"> °C</span></span>
-    </div>`;
+
+  const REGION_MAP = {
+    '京士柏': '九龍', '香港天文台': '九龍', '九龍城': '九龍',
+    '黃大仙': '九龍', '觀塘': '九龍', '深水埗': '九龍',
+    '啟德跑道公園': '九龍',
+    '黃竹坑': '港島', '香港公園': '港島', '筲箕灣': '港島',
+    '跑馬地': '港島', '赤柱': '港島',
+    '打鼓嶺': '新界', '流浮山': '新界', '大埔': '新界',
+    '沙田': '新界', '屯門': '新界', '將軍澳': '新界',
+    '西貢': '新界', '青衣': '新界', '荃灣可觀': '新界',
+    '荃灣城門谷': '新界', '元朗公園': '新界', '大美督': '新界',
+    '長洲': '離島', '赤鱲角': '離島',
+  };
+  const REGION_ORDER = ['港島', '九龍', '新界', '離島'];
+  const REGION_ICON = { '港島': '🏝️', '九龍': '🏙️', '新界': '🌳', '離島': '🏖️' };
+
+  // Group temps by region
+  const groups = {};
+  for (const t of temps) {
+    const region = REGION_MAP[t.place] || '其他';
+    if (!groups[region]) groups[region] = [];
+    groups[region].push(t);
+  }
+
+  // Sort items within each region by temperature (descending or ascending)
+  for (const region of Object.keys(groups)) {
+    groups[region].sort((a, b) => {
+      const valA = a.value ?? -Infinity;
+      const valB = b.value ?? -Infinity;
+      return tempSortAsc ? valA - valB : valB - valA;
+    });
+  }
+
+  // Update sort labels
+  const sortLabel = tempSortAsc ? '▲' : '▼';
+  const hLabel = document.getElementById('h-temps-sort-label');
+  const wLabel = document.getElementById('w-temps-sort-label');
+  if (hLabel) hLabel.textContent = sortLabel;
+  if (wLabel) wLabel.textContent = sortLabel;
+
+  // Build HTML in region order
+  const html = REGION_ORDER.map(region => {
+    const items = groups[region];
+    if (!items || !items.length) return '';
+    return `
+      <div style="grid-column:1/-1;margin-top:8px;font-size:var(--text-xs);font-weight:700;color:var(--text-muted);letter-spacing:0.5px;border-bottom:1px solid var(--border);padding-bottom:4px">
+        ${REGION_ICON[region] || ''} ${region}
+      </div>
+      ${items.map(t => {
+        const val = t.value ?? '--';
+        return `<div class="row-item" style="flex-direction:column;align-items:flex-start;gap:2px">
+          <span style="font-size:var(--text-xs);color:var(--text-muted)">${t.place}</span>
+          <span style="font-weight:600">${val}<span style="font-size:10px;color:var(--text-faint)"> °C</span></span>
+        </div>`;
+      }).join('')}
+    `;
   }).join('');
+
+  el.innerHTML = html;
+}
+
+/* ── Toggle temperature sort order ──────────────────────────── */
+function toggleTempSort() {
+  tempSortAsc = !tempSortAsc;
+  if (window.__tempData) {
+    renderTemps(window.__tempData, 'h-temps');
+    renderTemps(window.__tempData, 'w-temps');
+  }
 }
 
 /* ── Fetch 9-day forecast ───────────────────────────────────── */
@@ -297,16 +451,25 @@ function renderWarnsum(data) {
     el.innerHTML = `<div class="row-item"><span style="color:var(--success)">✅ 目前沒有生效的天氣警告 No active warnings</span></div>`;
     return;
   }
-  const warnings = Object.values(data);
-  el.innerHTML = warnings.map(w => {
-    const name = w.name || w.type || '警告';
-    const code = w.code || '';
+  const warnings = Object.entries(data);
+  el.innerHTML = warnings.map(([outerKey, w]) => {
+    const subCode = w.code || outerKey || '';
+    const warnInfo = WX_WARN_MAP[subCode] || WX_WARN_MAP[outerKey];
+    const name = warnInfo?.text || w.name || w.type || '警告';
+    const code = subCode;
     const issueTime = w.issueTime || '';
     const actionCode = w.actionCode || '';
     const tagClass = actionCode === 'ISSUE' ? 'tag-red' : actionCode === 'UPDATE' ? 'tag-yellow' : 'tag-muted';
+    
+    const iconUrl = warnInfo?.icon ? (warnInfo.icon.startsWith('/') || warnInfo.icon.startsWith('http') ? warnInfo.icon : getWarningIconUrl(warnInfo.icon)) : '';
+    const iconHtml = iconUrl 
+      ? `<img src="${iconUrl}" alt="${name}" style="width:50px;height:50px;vertical-align:middle;margin-right:8px;">` 
+      : '';
+
     return `
       <div class="row-item" style="flex-direction:column;align-items:flex-start;gap:4px">
         <div style="display:flex;align-items:center;gap:var(--sp-2)">
+          ${iconHtml}
           <span class="tag ${tagClass}">${code || actionCode}</span>
           <span style="font-weight:600;font-size:var(--text-sm)">${name}</span>
         </div>
@@ -346,7 +509,7 @@ async function fetchWarningBanner() {
     const keys = Object.keys(data || {});
     if (keys.length === 0) {
       banner.style.display = 'none';
-      return;
+     return;
     }
 
     const WARN_LABELS = {
@@ -435,10 +598,12 @@ window.Weather = {
   ...window.Weather,
   fetchCurrent: fetchCurrentWeather,
   fetchForecast: fetchForecast,
+  toggleTempSort: toggleTempSort,
   refresh: async function() {
     await Promise.all([
       fetchCurrentWeather(),
       fetchForecast(),
+      fetchWarnsum(),
       fetchWarningBanner(),
     ]);
   }

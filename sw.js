@@ -3,7 +3,7 @@
    PWA: offline cache + background sync
    ============================================================ */
 
-const CACHE_NAME  = 'hk-dashboard-v5';
+const CACHE_NAME  = 'hk-dashboard-v10';
 const STATIC_URLS = [
   '/',
   '/index.html',
@@ -24,6 +24,27 @@ const STATIC_URLS = [
   '/js/beach.js',
   '/js/map.js',
   '/js/app.js',
+  './assets/icons/cold.gif',
+  './assets/icons/firer.gif',
+  './assets/icons/firey.gif',
+  './assets/icons/frost.gif',
+  './assets/icons/landslip.gif',
+  './assets/icons/ntfl.gif',
+  './assets/icons/raina.gif',
+  './assets/icons/rainb.gif',
+  './assets/icons/rainr.gif',
+  './assets/icons/sms.gif',
+  './assets/icons/tc1.gif',
+  './assets/icons/tc10.gif',
+  './assets/icons/tc3.gif',
+  './assets/icons/tc8b.gif',
+  './assets/icons/tc8c.gif',
+  './assets/icons/tc8d.gif',
+  './assets/icons/tc8ne.gif',
+  './assets/icons/tc9.gif',
+  './assets/icons/ts.gif',
+  './assets/icons/tsunami-warn.gif',
+  './assets/icons/vhot.gif',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap',
 ];
 

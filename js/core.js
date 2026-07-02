@@ -130,6 +130,10 @@ function showPage(name) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   // Track current page globally for refresh logic
   window._currentPage = name;
+  if (name === 'transport' && window.Transport && typeof window.Transport.refresh === 'function') {
+    // forceDefaults=true only on first entry; subsequent refreshes preserve user's dropdown selection
+    window.Transport.refresh(true);
+  }
   // Scroll active tab into view in top nav
   setTimeout(() => {
     const activeTab = document.querySelector('.nav-tab.active');

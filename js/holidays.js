@@ -9,9 +9,9 @@ const Holidays = (function() {
 
   const API_URL = 'https://www.1823.gov.hk/common/ical/tc.json';
 
-  // Static fallback data (2024-2026) from data.gov.hk / 1823.gov.hk
+  // Static fallback data (2024-2027) from data.gov.hk / 1823.gov.hk
   // Used when the live API is blocked by CORS in browser context
-  const STATIC_HOLIDAYS = [{"date":"20240101","name":"一月一日"},{"date":"20240210","name":"農曆年初一"},{"date":"20240212","name":"農曆年初三"},{"date":"20240213","name":"農曆年初四"},{"date":"20240329","name":"耶穌受難節"},{"date":"20240330","name":"耶穌受難節翌日"},{"date":"20240401","name":"復活節星期一"},{"date":"20240404","name":"清明節"},{"date":"20240501","name":"勞動節"},{"date":"20240515","name":"佛誕"},{"date":"20240610","name":"端午節"},{"date":"20240701","name":"香港特別行政區成立紀念日"},{"date":"20240918","name":"中秋節翌日"},{"date":"20241001","name":"國慶日"},{"date":"20241011","name":"重陽節"},{"date":"20241225","name":"聖誕節"},{"date":"20241226","name":"聖誕節後第一個周日"},{"date":"20250101","name":"一月一日"},{"date":"20250129","name":"農曆年初一"},{"date":"20250130","name":"農曆年初二"},{"date":"20250131","name":"農曆年初三"},{"date":"20250404","name":"清明節"},{"date":"20250418","name":"耶穌受難節"},{"date":"20250419","name":"耶穌受難節翌日"},{"date":"20250421","name":"復活節星期一"},{"date":"20250501","name":"勞動節"},{"date":"20250505","name":"佛誕"},{"date":"20250531","name":"端午節"},{"date":"20250701","name":"香港特別行政區成立紀念日"},{"date":"20251001","name":"國慶日"},{"date":"20251007","name":"中秋節翌日"},{"date":"20251029","name":"重陽節"},{"date":"20251225","name":"聖誕節"},{"date":"20251226","name":"聖誕節後第一個周日"},{"date":"20260101","name":"一月一日"},{"date":"20260217","name":"農曆年初一"},{"date":"20260218","name":"農曆年初二"},{"date":"20260219","name":"農曆年初三"},{"date":"20260403","name":"耶穌受難節"},{"date":"20260404","name":"耶穌受難節翌日"},{"date":"20260406","name":"清明節翌日"},{"date":"20260407","name":"復活節星期一翌日"},{"date":"20260501","name":"勞動節"},{"date":"20260525","name":"佛誕翌日"},{"date":"20260619","name":"端午節"},{"date":"20260701","name":"香港特別行政區成立紀念日"},{"date":"20260926","name":"中秋節翌日"},{"date":"20261001","name":"國慶日"},{"date":"20261019","name":"重陽節翌日"},{"date":"20261225","name":"聖誕節"},{"date":"20261226","name":"聖誕節後第一個周日"}];
+  const STATIC_HOLIDAYS = [{"date":"20240101","name":"一月一日"},{"date":"20240210","name":"農曆年初一"},{"date":"20240212","name":"農曆年初三"},{"date":"20240213","name":"農曆年初四"},{"date":"20240329","name":"耶穌受難節"},{"date":"20240330","name":"耶穌受難節翌日"},{"date":"20240401","name":"復活節星期一"},{"date":"20240404","name":"清明節"},{"date":"20240501","name":"勞動節"},{"date":"20240515","name":"佛誕"},{"date":"20240610","name":"端午節"},{"date":"20240701","name":"香港特別行政區成立紀念日"},{"date":"20240918","name":"中秋節翌日"},{"date":"20241001","name":"國慶日"},{"date":"20241011","name":"重陽節"},{"date":"20241225","name":"聖誕節"},{"date":"20241226","name":"聖誕節後第一個周日"},{"date":"20250101","name":"一月一日"},{"date":"20250129","name":"農曆年初一"},{"date":"20250130","name":"農曆年初二"},{"date":"20250131","name":"農曆年初三"},{"date":"20250404","name":"清明節"},{"date":"20250418","name":"耶穌受難節"},{"date":"20250419","name":"耶穌受難節翌日"},{"date":"20250421","name":"復活節星期一"},{"date":"20250501","name":"勞動節"},{"date":"20250505","name":"佛誕"},{"date":"20250531","name":"端午節"},{"date":"20250701","name":"香港特別行政區成立紀念日"},{"date":"20251001","name":"國慶日"},{"date":"20251007","name":"中秋節翌日"},{"date":"20251029","name":"重陽節"},{"date":"20251225","name":"聖誕節"},{"date":"20251226","name":"聖誕節後第一個周日"},{"date":"20260101","name":"一月一日"},{"date":"20260217","name":"農曆年初一"},{"date":"20260218","name":"農曆年初二"},{"date":"20260219","name":"農曆年初三"},{"date":"20260403","name":"耶穌受難節"},{"date":"20260404","name":"耶穌受難節翌日"},{"date":"20260406","name":"清明節翌日"},{"date":"20260407","name":"復活節星期一翌日"},{"date":"20260501","name":"勞動節"},{"date":"20260525","name":"佛誕翌日"},{"date":"20260619","name":"端午節"},{"date":"20260701","name":"香港特別行政區成立紀念日"},{"date":"20260926","name":"中秋節翌日"},{"date":"20261001","name":"國慶日"},{"date":"20261019","name":"重陽節翌日"},{"date":"20261225","name":"聖誕節"},{"date":"20261226","name":"聖誕節後第一個周日"},{"date":"20270101","name":"一月一日"},{"date":"20270206","name":"農曆年初一"},{"date":"20270208","name":"農曆年初三"},{"date":"20270209","name":"農曆年初四"},{"date":"20270326","name":"耶穌受難節"},{"date":"20270327","name":"耶穌受難節翌日"},{"date":"20270329","name":"復活節星期一"},{"date":"20270405","name":"清明節"},{"date":"20270501","name":"勞動節"},{"date":"20270513","name":"佛誕"},{"date":"20270609","name":"端午節"},{"date":"20270701","name":"香港特別行政區成立紀念日"},{"date":"20270919","name":"中秋節翌日"},{"date":"20271001","name":"國慶日"},{"date":"20271008","name":"重陽節"},{"date":"20271225","name":"聖誕節"},{"date":"20271227","name":"聖誕節後第一個周日"}];
 
   const DAYS_ZH = ['日', '一', '二', '三', '四', '五', '六'];
   const DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -113,7 +113,7 @@ const Holidays = (function() {
         const days = daysUntil(next.date);
         const fmt = fmtDate(next.date);
         countdownEl.innerHTML = `
-          <div style="text-align:center;padding:var(--sp-4) 0">
+          <div style="text-align:center;padding:var(--sp-4);width:100%">
             <div style="font-size:var(--text-xs);color:var(--text-faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:var(--sp-2)">距下個假期 Next Holiday</div>
             <div style="font-family:var(--font-mono);font-size:var(--text-3xl);font-weight:700;color:var(--primary);line-height:1">${days}</div>
             <div style="font-size:var(--text-sm);color:var(--text-muted);margin-top:var(--sp-1)">天 days</div>
@@ -312,8 +312,62 @@ const Holidays = (function() {
     { name:'冬至', en:'Winter Solstice',   date: new Date(2026, 11, 22)},
   ];
 
+    const SOLAR_TERMS_2027 = [
+    { name:'小寒', en:'Minor Cold',        date: new Date(2027, 0, 5)  },
+    { name:'大寒', en:'Major Cold',        date: new Date(2027, 0, 20) },
+    { name:'立春', en:'Start of Spring',   date: new Date(2027, 1, 4)  },
+    { name:'雨水', en:'Rain Water',        date: new Date(2027, 1, 19) },
+    { name:'驚蟄', en:'Awakening of Insects', date: new Date(2027, 2, 6) },
+    { name:'春分', en:'Spring Equinox',    date: new Date(2027, 2, 21) },
+    { name:'清明', en:'Clear and Bright',  date: new Date(2027, 3, 5)  },
+    { name:'穀雨', en:'Grain Rain',        date: new Date(2027, 3, 20) },
+    { name:'立夏', en:'Start of Summer',   date: new Date(2027, 4, 6)  },
+    { name:'小滿', en:'Grain Buds',        date: new Date(2027, 4, 21) },
+    { name:'芒種', en:'Grain in Ear',      date: new Date(2027, 5, 6)  },
+    { name:'夏至', en:'Summer Solstice',   date: new Date(2027, 5, 21) },
+    { name:'小暑', en:'Minor Heat',        date: new Date(2027, 6, 7)  },
+    { name:'大暑', en:'Major Heat',        date: new Date(2027, 6, 23) },
+    { name:'立秋', en:'Start of Autumn',   date: new Date(2027, 7, 8)  },
+    { name:'處暑', en:'End of Heat',       date: new Date(2027, 7, 23) },
+    { name:'白露', en:'White Dew',         date: new Date(2027, 8, 8)  },
+    { name:'秋分', en:'Autumnal Equinox',  date: new Date(2027, 8, 23) },
+    { name:'寒露', en:'Cold Dew',          date: new Date(2027, 9, 8)  },
+    { name:'霜降', en:'Frost Descent',  date: new Date(2027, 9, 23) },
+    { name:'立冬', en:'Start of Winter',   date: new Date(2027, 10, 7) },
+    { name:'小雪', en:'Minor Snow',        date: new Date(2027, 10, 22)},
+    { name:'大雪', en:'Major Snow',        date: new Date(2027, 11, 7) },
+    { name:'冬至', en:'Winter Solstice',   date: new Date(2027, 11, 22)},
+  ];
+
+    const SOLAR_TERMS_2028 = [
+    { name:'小寒', en:'Minor Cold',        date: new Date(2028, 0, 6)  },
+    { name:'大寒', en:'Major Cold',        date: new Date(2028, 0, 20) },
+    { name:'立春', en:'Start of Spring',   date: new Date(2028, 1, 4)  },
+    { name:'雨水', en:'Rain Water',        date: new Date(2028, 1, 19) },
+    { name:'驚蟄', en:'Awakening of Insects', date: new Date(2028, 2, 5) },
+    { name:'春分', en:'Spring Equinox',    date: new Date(2028, 2, 20) },
+    { name:'清明', en:'Clear and Bright',  date: new Date(2028, 3, 4)  },
+    { name:'穀雨', en:'Grain Rain',        date: new Date(2028, 3, 19) },
+    { name:'立夏', en:'Start of Summer',   date: new Date(2028, 4, 5)  },
+    { name:'小滿', en:'Grain Buds',        date: new Date(2028, 4, 20) },
+    { name:'芒種', en:'Grain in Ear',      date: new Date(2028, 5, 5)  },
+    { name:'夏至', en:'Summer Solstice',   date: new Date(2028, 5, 21) },
+    { name:'小暑', en:'Minor Heat',        date: new Date(2028, 6, 6)  },
+    { name:'大暑', en:'Major Heat',        date: new Date(2028, 6, 22) },
+    { name:'立秋', en:'Start of Autumn',   date: new Date(2028, 7, 7)  },
+    { name:'處暑', en:'End of Heat',       date: new Date(2028, 7, 22) },
+    { name:'白露', en:'White Dew',         date: new Date(2028, 8, 7)  },
+    { name:'秋分', en:'Autumnal Equinox',  date: new Date(2028, 8, 22) },
+    { name:'寒露', en:'Cold Dew',          date: new Date(2028, 9, 8)  },
+    { name:'霜降', en:'Frost Descent',  date: new Date(2028, 9, 23) },
+    { name:'立冬', en:'Start of Winter',   date: new Date(2028, 10, 7) },
+    { name:'小雪', en:'Minor Snow',        date: new Date(2028, 10, 22)},
+    { name:'大雪', en:'Major Snow',        date: new Date(2028, 11, 6) },
+    { name:'冬至', en:'Winter Solstice',   date: new Date(2028, 11, 21)},
+  ];
+
   function getAllSolarTerms() {
-    return [...SOLAR_TERMS_2025, ...SOLAR_TERMS_2026].sort((a, b) => a.date - b.date);
+    return [...SOLAR_TERMS_2025, ...SOLAR_TERMS_2026, ...SOLAR_TERMS_2027, ...SOLAR_TERMS_2028].sort((a, b) => a.date - b.date);
   }
 
   /* ── Render solar terms section ─────────────────────────── */
@@ -347,7 +401,7 @@ const Holidays = (function() {
             <div style="font-size:var(--text-xs);color:var(--text-faint);margin-bottom:var(--sp-2)">
               當前節氣 Current Term
             </div>
-            <div style="font-family:var(--font-mono);font-size:var(--text-2xl);font-weight:700;
+            <div style="font-family:'WDXL Lubrifont TC',sans-serif;font-size:var(--text-3xl);font-weight:100;
                         color:var(--teal)">${current.name}</div>
             <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--sp-1)">
               ${current.en}
@@ -364,7 +418,7 @@ const Holidays = (function() {
             <div style="font-size:var(--text-xs);color:var(--text-faint);margin-bottom:var(--sp-2)">
               下個節氣 Next Term
             </div>
-            <div style="font-family:var(--font-mono);font-size:var(--text-2xl);font-weight:700;
+            <div style="font-family:'WDXL Lubrifont TC',sans-serif;font-size:var(--text-3xl);font-weight:100;
                         color:var(--primary)">${next.name}</div>
             <div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--sp-1)">
               ${next.en}
@@ -381,7 +435,7 @@ const Holidays = (function() {
       <!-- All upcoming solar terms list -->
       <div style="font-size:var(--text-xs);font-weight:700;color:var(--text-faint);
                   text-transform:uppercase;letter-spacing:.06em;margin-bottom:var(--sp-2)">
-        2026 年二十四節氣
+        2026年的二十四節氣
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2)">
         ${SOLAR_TERMS_2026.map(t => {
@@ -394,10 +448,10 @@ const Holidays = (function() {
           const mm = String(t.date.getMonth()+1).padStart(2,'0');
           const dd = String(t.date.getDate()).padStart(2,'0');
           return `
-            <div style="padding:var(--sp-2) var(--sp-3);background:\${bg};border-radius:var(--r-md);
-                        opacity:\${opacity};text-align:center;min-width:56px">
-              <div style="font-size:12px;font-weight:700;color:\${color}">\${t.name}</div>
-              <div style="font-size:9px;color:var(--text-faint);font-family:var(--font-mono)">\${mm}/\${dd}</div>
+            <div style="padding:var(--sp-2) var(--sp-3);background:${bg};border-radius:var(--r-md);
+                        opacity:${opacity};text-align:center;min-width:56px">
+              <div style="font-size:12px;font-weight:700;color:${color}">${t.name}</div>
+              <div style="font-size:9px;color:var(--text-faint);font-family:var(--font-mono)">${mm}/${dd}</div>
             </div>
           `;
         }).join('')}
@@ -442,7 +496,7 @@ const Holidays = (function() {
       const notice = document.getElementById('hol-data-notice');
       if (notice) {
         notice.innerHTML = `<div style="font-size:var(--text-xs);color:var(--text-faint);padding:var(--sp-2) 0">
-          數據來源：香港1823 — 2024–2026年公眾假期
+          數據來源：香港1823 (2024–2027年公眾假期)
         </div>`;
       }
     }

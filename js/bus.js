@@ -8,11 +8,12 @@
 
 /* ══ PRESET STOPS ═══════════════════════════════════════════ */
 const PRESET_STOPS = [
-  { operator:'KMB', id:'B3B0EF2BC688751D', label:'屯門市中心總站', route:'60X', serviceType:1, hint:'往旺角/高鐵' },
-  { operator:'KMB', id:'77FB32597CCD30F5', label:'兆康苑總站',     route:'67X', serviceType:1, hint:'往旺角' },
-  { operator:'KMB', id:'45C39BB56C6B333C', label:'大興總站',       route:'66M', serviceType:1, hint:'往元朗' },
-  { operator:'KMB', id:'507A1E5DF62D2B4A', label:'天瑞總站',       route:'69X', serviceType:1, hint:'往沙田' },
-  { operator:'CTB', id:'001939',           label:'龍門居',         route:'962X', hint:'往銅鑼灣' },
+  { operator:'KMB', id:'61D7306AC40C4FB8', label:'青衣碼頭總站',      route:'44', serviceType:1, hint:'往旺角東站' },
+  { operator:'KMB', id:'6129FAE857E1D5F0', label:'青衣碼頭總站',      route:'44', serviceType:1, hint:'往青衣邨' },
+  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站',    route:'S64C', serviceType:1, hint:'東涌(逸東)<>航膳東路(循環線)' },
+  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心',         route:'S64C', serviceType:1, hint:'超級一號貨站<>東涌(逸東)' },
+  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站',    route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },  
+  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心',         route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },
 ];
 
 /* ══ CACHE ══════════════════════════════════════════════════ */
@@ -48,14 +49,31 @@ function fmtEta(iso, rmk) {
     .eta-min  { font-size:18px; line-height:1; font-family:var(--font-mono); }
     .eta-unit { font-size:10px; color:inherit; opacity:.8; margin-left:1px; }
     .eta-time { font-size:11px; color:inherit; opacity:.7; margin-left:6px; font-family:var(--font-mono); }
-    .stop-btn { display:flex; align-items:center; gap:10px; width:100%;
-      background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
-      padding:12px 14px; cursor:pointer; text-align:left; color:var(--text);
-      transition:background .12s, border-color .12s; }
-    .stop-btn:hover, .stop-btn:active { background:var(--primary-lt); border-color:var(--primary); }
-    .stop-num { font-size:11px; color:var(--text-faint); min-width:22px; flex-shrink:0; }
-    .stop-name { font-size:14px; font-weight:600; flex:1; }
-    .stop-arrow { color:var(--primary); flex-shrink:0; opacity:.6; }
+    .stop-list { display:block; width:100%; }
+    .stop-btn { display:flex; align-items:center; width:100%; background:var(--surface-2);
+      border:1px solid var(--border); border-radius:10px; padding:12px 16px;
+      margin-bottom:5px !important; box-sizing:border-box;
+      cursor:pointer; color:var(--text);
+      transition:background .18s, border-color .18s, transform .15s, box-shadow .18s; }
+    .stop-btn:last-child { margin-bottom:0 !important; }
+    .stop-btn[disabled] { opacity:.5; cursor:default; filter:grayscale(.08); }
+    .stop-btn:not([disabled]):hover, .stop-btn:not([disabled]):active {
+      background: rgba(59,130,246,0.08);
+      border-color: rgba(59,130,246,0.5);
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(0,0,0,.18);
+    }
+    .stop-btn:not([disabled]):hover .stop-name,
+    .stop-btn:not([disabled]):hover .stop-num,
+    .stop-btn:not([disabled]):hover .stop-arrow {
+      color:var(--primary);
+      opacity:1;
+    }
+    .stop-main { display:flex; align-items:center; gap:12px; width:100%; justify-content:flex-start; }
+    .stop-num { font-size:12px; color:var(--text-faint); min-width:28px; flex-shrink:0; text-align:center; font-weight:700; }
+    .stop-name { font-size:15px; font-weight:700; flex:1 1 auto; min-width:0; text-align:left;
+      overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .stop-arrow { color:var(--primary); flex-shrink:0; opacity:.8; margin-left:auto; }
     @keyframes buspin { to { transform:rotate(360deg) } }
     .bus-spin { width:18px;height:18px;border:2px solid var(--border);
       border-top-color:var(--primary);border-radius:50%;animation:buspin .7s linear infinite; }
@@ -332,10 +350,12 @@ const BusSearch = (function() {
       const clickAttr = name
         ? 'data-stop="' + s.stop + '" data-op="' + r.operator + '" data-route="' + r.route + '" data-dir="' + r.direction + '" data-name="' + safeName + '"'
         : 'disabled';
-      return '<button class="stop-btn" ' + clickAttr + ' style="' + (!name ? 'opacity:.4;cursor:default' : '') + '">'
-        + '<span class="stop-num">' + (i+1) + '</span>'
-        + '<span class="stop-name">' + (name || '…') + '</span>'
-        + (name ? '<svg class="stop-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>' : '')
+      return '<button class="stop-btn" ' + clickAttr + ' style="display:flex;width:100%;box-sizing:border-box;margin-bottom:12px;' + (!name ? 'opacity:.4;cursor:default' : '') + '">'
+        + '<span class="stop-main" style="display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start;">'
+        + '<span class="stop-num" style="font-size:11px;color:var(--text-faint);min-width:22px;flex-shrink:0;text-align:center;">' + (i+1) + '</span>'
+        + '<span class="stop-name" style="font-size:14px;font-weight:600;flex:1 1 auto;min-width:0;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + (name || '…') + '</span>'
+        + '</span>'
+        + (name ? '<svg class="stop-arrow" style="color:var(--primary);flex-shrink:0;opacity:.6;margin-left:auto;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>' : '')
         + '</button>';
     }).join('');
 
@@ -351,7 +371,7 @@ const BusSearch = (function() {
           <div style="height:100%;width:${pct}%;background:var(--primary);border-radius:2px;transition:width .3s"></div>
         </div>
       ` : ''}
-      <div style="display:flex;flex-direction:column;gap:6px">${buttonsHtml}</div>
+      <div class="stop-list">${buttonsHtml}</div>
     `;
   }
 
@@ -484,6 +504,64 @@ window.Bus = Bus;
 window.BusSearch = BusSearch;
 
 /* ══ GMB MODULE ═════════════════════════════════════════════ */
+/* GMB API (data.etagmb.gov.hk) does not support CORS, so we use proxy fallbacks. */
+const GMB_PROXIES = [
+  url => `https://proxy.cors.sh/${url}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+
+function escapeAttr(value) {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function normalizeRoutesList(data) {
+  const payload = data?.data;
+  if (Array.isArray(payload?.routes)) {
+    return payload.routes.map(item => {
+      if (typeof item === 'string') {
+        return { route_code: item, route_id: item, description_tc: '', description_en: '' };
+      }
+      return {
+        route_code: item?.route_code || item?.routeNo || item?.route_id || item?.id || '',
+        route_id: item?.route_id || item?.id || item?.route_code || item?.routeNo || '',
+        description_tc: item?.description_tc || item?.description_sc || item?.description_en || '',
+        description_en: item?.description_en || item?.description_tc || item?.description_sc || '',
+      };
+    });
+  }
+  if (Array.isArray(payload)) {
+    return payload.map(item => ({
+      route_code: item?.route_code || item?.routeNo || item?.route_id || item?.id || '',
+      route_id: item?.route_id || item?.id || item?.route_code || item?.routeNo || '',
+      description_tc: item?.description_tc || item?.description_sc || item?.description_en || '',
+      description_en: item?.description_en || item?.description_tc || item?.description_sc || '',
+    }));
+  }
+  return [];
+}
+
+async function gmbFetch(path, retries = 2) {
+  const url = `https://data.etagmb.gov.hk${path}`;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    for (const buildProxyUrl of GMB_PROXIES) {
+      try {
+        const r = await fetch(buildProxyUrl(url), {
+          headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
+        });
+        if (!r.ok) continue;
+        const text = await r.text();
+        return JSON.parse(text);
+      } catch (e) {
+        // Try the next proxy or retry.
+      }
+    }
+    if (attempt < retries) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  throw new Error('暫時無法連線到 GMB API，請稍候再試');
+}
+
 const Bus_GMB = (function() {
 
   async function loadRoutes() {
@@ -492,22 +570,27 @@ const Bus_GMB = (function() {
     if (!cont) return;
     cont.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-faint);font-size:12px"><div class="bus-spin"></div>載入中…</div>`;
     try {
-      const r    = await fetch(`https://data.etagmb.gov.hk/route/${region}`);
-      const data = await r.json();
-      const routes = data.data?.routes || [];
+      const data = await gmbFetch(`/route/${region}`);
+      const routes = normalizeRoutesList(data);
       if (!routes.length) { cont.innerHTML = `<div style="color:var(--text-faint)">暫無數據</div>`; return; }
       cont.innerHTML = `
         <div style="font-size:11px;color:var(--text-faint);margin-bottom:8px">${routes.length} 條路線 · 點擊路線查看站點及到站時間</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${routes.slice(0,60).map(r => `
-            <button onclick="Bus_GMB.selectRoute('${r.route_id}','${region}')"
-              style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
-                     padding:5px 12px;font-size:12px;color:var(--text);cursor:pointer"
-              title="${r.description_tc||''}">
-              ${r.route_code || r.route_id}
-            </button>
-          `).join('')}
-          ${routes.length>60?`<span style="color:var(--text-faint);font-size:11px;align-self:center">+${routes.length-60} 條</span>`:''}
+          ${routes.map(r => {
+            const routeId = String(r.route_id || r.id || r.route_code || '');
+            const label = r.route_code || r.route_id || '—';
+            const title = escapeAttr(r.description_tc || r.description_en || '');
+            const safeRouteId = String(routeId).replace(/'/g, "\\'");
+            const safeRegion = String(region).replace(/'/g, "\\'");
+            return `
+              <button onclick="Bus_GMB.selectRoute('${safeRouteId}', '${safeRegion}')"
+                style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+                       padding:5px 12px;font-size:12px;color:var(--text);cursor:pointer"
+                title="${title}">
+                ${escapeAttr(label)}
+              </button>
+            `;
+          }).join('')}
         </div>
       `;
     } catch (e) {
@@ -520,31 +603,89 @@ const Bus_GMB = (function() {
     if (!cont) return;
     cont.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-faint);font-size:12px"><div class="bus-spin"></div>載入站點…</div>`;
     try {
-      const r    = await fetch(`https://data.etagmb.gov.hk/route/${region}/${routeId}`);
-      const data = await r.json();
-      const dir  = data.data?.directions?.[0] || {};
-      const stops = dir.stops || [];
-      const code  = data.data?.route_code || routeId;
+      const routeCode = String(routeId || '');
+      const routeDataResponse = await gmbFetch(`/route/${region}/${routeCode}`);
+      const routeData = Array.isArray(routeDataResponse?.data) ? routeDataResponse.data[0] : routeDataResponse?.data || {};
+      const directions = Array.isArray(routeData?.directions) ? routeData.directions : [];
+      const routeIdValue = String(routeData?.route_id || routeCode);
+      const code  = routeData?.route_code || routeCode;
       cont.innerHTML = `
         <div style="padding:8px 12px;background:var(--surface-2);border-radius:8px;
                     margin-bottom:10px;font-size:13px;font-weight:600">
-          🟩 ${code} · ${dir.orig_tc||''} → ${dir.dest_tc||''}
+          🟩 ${escapeAttr(code)} · ${escapeAttr(routeData?.description_tc || routeData?.description_en || '')}
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;flex-direction:column;gap:6px">
-          ${stops.slice(0,25).map((s,i) => {
-            const sname = (s.name_tc||s.stop_id||'').replace(/"/g,'&quot;');
-            return '<button class="stop-btn gmb-stop" data-route="'+routeId+'" data-seq="'+(i+1)+'" data-name="'+sname+'">'
-              + '<span class="stop-num">'+(i+1)+'</span>'
-              + '<span class="stop-name">'+(s.name_tc||s.stop_id)+'</span>'
-              + '<svg class="stop-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>'
-              + '</button>';
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          ${directions.map(dir => {
+            const seq = dir.route_seq || 1;
+            const label = `${dir.orig_tc || ''} → ${dir.dest_tc || ''}`;
+            const safeLabel = String(label).replace(/'/g, "\\'");
+            const safeCode = String(code).replace(/'/g, "\\'");
+            return `
+              <button type="button"
+                onclick="Bus_GMB.showDirectionStops('${routeIdValue}', '${region}', '${safeCode}', '${seq}', '${safeLabel}')"
+                style="background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+                       padding:6px 10px;font-size:12px;color:var(--text);cursor:pointer">
+                ${escapeAttr(label)}
+              </button>
+            `;
           }).join('')}
-        </div>    </div>
+        </div>
+        <div id="gmb-direction-stops"></div>
         <div id="gmb-eta-result" style="margin-top:12px"></div>
       `;
+      if (directions.length) {
+        const firstDir = directions[0] || {};
+        const firstLabel = `${firstDir.orig_tc || ''} → ${firstDir.dest_tc || ''}`;
+        await showDirectionStops(routeIdValue, region, code, firstDir.route_seq || 1, firstLabel);
+      }
     } catch (e) {
       cont.innerHTML = `<div style="color:var(--error);font-size:12px">${e.message}</div>`;
+    }
+  }
+
+  async function showDirectionStops(routeIdValue, region, code, directionSeq, directionLabelOverride) {
+    const box = document.getElementById('gmb-direction-stops');
+    if (!box) return;
+    box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-faint);font-size:12px"><div class="bus-spin"></div>載入站點順序…</div>`;
+    try {
+      const routeDataResponse = await gmbFetch(`/route/${region}/${routeIdValue}`);
+      const routeData = Array.isArray(routeDataResponse?.data) ? routeDataResponse.data[0] : routeDataResponse?.data || {};
+      const directions = Array.isArray(routeData?.directions) ? routeData.directions : [];
+      const selectedDir = directions.find(dir => String(dir.route_seq) === String(directionSeq)) || directions[0] || {};
+      const stopResponse = await gmbFetch(`/route-stop/${routeIdValue}/${directionSeq}`);
+      const stops = Array.isArray(stopResponse?.data?.route_stops) ? stopResponse.data.route_stops : [];
+      const directionLabel = directionLabelOverride || `${selectedDir.orig_tc || ''} → ${selectedDir.dest_tc || ''}`;
+      box.innerHTML = `
+        <div style="padding:8px 12px;background:var(--surface-2);border-radius:8px;margin-bottom:8px;font-size:13px;font-weight:600">
+          🟩 ${escapeAttr(code)} · ${escapeAttr(directionLabel)}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${stops.length ? stops.map((s,i) => {
+            const stopSeq = String(s.stop_seq || (i+1));
+            const stopName = String(s.name_tc || s.stop_id || '');
+            const safeRouteId = String(routeIdValue).replace(/'/g, "\\'");
+            const safeSeq = stopSeq.replace(/'/g, "\\'");
+            const safeName = stopName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            return `
+              <button type="button" class="stop-btn gmb-stop"
+                onclick="Bus_GMB.loadETA('${safeRouteId}', '${safeSeq}', '${safeName}')"
+                style="display:flex;align-items:center;justify-content:space-between;gap:10px;
+                       background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+                       padding:8px 12px;font-size:13px;color:var(--text);cursor:pointer;text-align:left">
+                <span style="display:flex;align-items:center;gap:8px">
+                  <span class="stop-num" style="display:inline-flex;align-items:center;justify-content:center;
+                      width:24px;height:24px;border-radius:999px;background:var(--primary);color:white;
+                      font-size:11px;font-weight:700">${i+1}</span>
+                  <span class="stop-name">${escapeAttr(stopName)}</span>
+                </span>
+                <svg class="stop-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            `;
+          }).join('') : '<div style="color:var(--text-faint);font-size:13px;padding:8px 0">此方向暫無站點資料</div>'}
+        </div>
+      `;
+    } catch (e) {
+      box.innerHTML = `<div style="color:var(--text-faint);font-size:13px;padding:8px 0">此方向暫無站點資料</div>`;
     }
   }
 
@@ -554,27 +695,36 @@ const Bus_GMB = (function() {
     cont.scrollIntoView({ behavior:'smooth', block:'start' });
     cont.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-faint);font-size:12px"><div class="bus-spin"></div>查詢到站時間…</div>`;
     try {
-      const r    = await fetch(`https://data.etagmb.gov.hk/eta/route-stop/${routeId}/${stopSeq}`);
-      const data = await r.json();
-      const etas = data.data?.eta || [];
+      const data = await gmbFetch(`/eta/route-stop/${routeId}/${stopSeq}`);
+      const etas = Array.isArray(data?.data?.etas) ? data.data.etas : (Array.isArray(data?.data?.eta) ? data.data.eta : []);
       const now  = new Date().toLocaleTimeString('zh-HK', {hour12:false,hour:'2-digit',minute:'2-digit'});
-      cont.innerHTML = `
-        <div style="font-size:14px;font-weight:700;margin-bottom:10px">📍 ${stopName}</div>
-        ${etas.length ? etas.slice(0,4).map((e,i) => `
-          <div style="display:flex;align-items:center;justify-content:space-between;
-                      padding:10px 14px;background:var(--surface-2);border-radius:10px;margin-bottom:6px">
-            <span style="font-size:13px;font-weight:600">第 ${i+1} 班</span>
-            <div>${fmtEta(e.timestamp, e.remarks_tc)}</div>
-          </div>
-        `).join('') : '<div style="color:var(--text-faint);font-size:13px;padding:10px 0">暫無班次資料</div>'}
-        <div style="font-size:10px;color:var(--text-faint);margin-top:6px">更新 ${now}</div>
-      `;
+      if (Array.isArray(etas) && etas.length) {
+        cont.innerHTML = `
+          <div style="font-size:14px;font-weight:700;margin-bottom:10px">📍 ${escapeAttr(stopName)}</div>
+          ${etas.slice(0,4).map((e,i) => `
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:10px 14px;background:var(--surface-2);border-radius:10px;margin-bottom:6px">
+              <span style="font-size:13px;font-weight:600">第 ${i+1} 班</span>
+              <div>${fmtEta(e.timestamp, e.remarks_tc || e.remarks_en || e.remarks_sc)}</div>
+            </div>
+          `).join('')}
+          <div style="font-size:10px;color:var(--text-faint);margin-top:6px">更新 ${now}</div>
+        `;
+      } else {
+        cont.innerHTML = `
+          <div style="font-size:14px;font-weight:700;margin-bottom:10px">📍 ${escapeAttr(stopName)}</div>
+          <div style="color:var(--text-faint);font-size:13px;padding:10px 0">暫無班次資料（GMB API 目前未提供此站點的 ETA）</div>
+        `;
+      }
     } catch (e) {
-      cont.innerHTML = `<div style="color:var(--error);font-size:12px">${e.message}</div>`;
+      cont.innerHTML = `
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">📍 ${escapeAttr(stopName)}</div>
+        <div style="color:var(--text-faint);font-size:13px;padding:10px 0">暫無班次資料：GMB ETA 目前不可用</div>
+      `;
     }
   }
 
-  return { loadRoutes, selectRoute, loadETA };
+  return { loadRoutes, selectRoute, showDirectionStops, loadETA };
 })();
 
 window.Bus_GMB = Bus_GMB;
