@@ -97,6 +97,7 @@ async function loadAllData() {
     safeRun('Health',       () => Health.refresh()),
     safeRun('Environment',  () => Environment.refresh()),
     safeRun('Finance',      () => typeof Finance !== 'undefined' ? Finance.refresh() : Promise.resolve()),
+    safeRun('Typhoon',      () => Typhoon.refresh()),
   ]);
 }
 
@@ -134,6 +135,11 @@ function startAutoRefresh() {
       await safeRun('Parking', () => Parking.refresh());
     }
   }, 300000);
+
+  // Typhoon every 10 minutes
+  setInterval(async () => {
+    await safeRun('Typhoon', () => Typhoon.refresh());
+  }, 600000);
 }
 
 /* ── Safe run wrapper ────────────────────────────────────────── */
@@ -154,6 +160,7 @@ window.showPage = function(name) {
     case 'weather':
       safeRun('Weather', () => Weather.refresh());
       safeRun('Tides', () => Tides.refresh());
+      safeRun('Typhoon', () => Typhoon.refresh());
       loadWeatherForecastText();
       break;
     case 'transport':

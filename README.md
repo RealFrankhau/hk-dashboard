@@ -18,17 +18,6 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 
 ---
 
-## 📸 Screenshots
-
-| 總覽 Overview | 天氣 Weather | 巴士 Bus ETA |
-|---|---|---|
-| ![Home](https://via.placeholder.com/300x200/0d1b2e/60a5fa?text=總覽+Home) | ![Weather](https://via.placeholder.com/300x200/0d1b2e/60a5fa?text=天氣+Weather) | ![Bus](https://via.placeholder.com/300x200/0d1b2e/60a5fa?text=巴士+Bus+ETA) |
-
-| 地圖 Map | 潮汐 Tides | 假期 Holidays |
-|---|---|---|
-| ![Map](https://via.placeholder.com/300x200/0d1b2e/60a5fa?text=互動地圖+Map) | ![Tides](https://via.placeholder.com/300x200/0d1b2e/60a5fa?text=潮汐+Tides) | ![Holidays](https://via.placeholder.com/300x200/0d1b2e/60a5fa?text=假期+Holidays) |
-
----
 
 ## ✨ Features · 功能
 
@@ -55,58 +44,15 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 ### 🌊 潮汐 Tides
 - **逐時潮汐圖** — SVG 折線圖顯示今日 24 小時潮汐高度
 - **7個測潮站** — 屯門（TMW）、鰂魚涌、赤鱲角、昂船洲、馬灣、大埔滘、塔門
-- **地震資訊** — 最近地震強度、地區、深度
-
-### 🏖 泳灘水質 Beach Water Quality
-- **34 個法定泳灘** — 環保署水質等級（良好/尚可/欠佳）
-- **按地區篩選** — 西貢、南區、大嶼山、九龍、離島等
-
-### 🗺 互動地圖 Interactive Map
-- **停車場空位** — 全港 562 個停車場實時空位，顏色標示（綠/藍/黃/紅）
-- **AQHI 監測站** — 15 個空氣質素監測站
-- **泳灘水質圖層** — 泳灘分佈及水質
-- **AED 心臟除顫器** — 25 個主要 AED 位置（醫院、MTR、商場）
-
-### 🅿 停車場 Parking
-- **562 個停車場** — 私家車、電單車、輕型貨車空位
-- **地區篩選** — 按 18 區過濾
-- **名稱搜尋** — 即時搜尋停車場名稱
 
 ### 🏥 醫療 Healthcare
 - **急症室等候時間** — 全港所有公立醫院，每小時更新
-
-### 🌬 環境 Environment
-- **AQHI 空氣質素健康指數** — 一般及路邊監測站預報
-- **健康建議** — 各等級對應健康指引
 
 ### 📅 假期 Holidays
 - **公眾假期** — 2024-2026 全部法定假期，倒計時下一個假期
 - **24 節氣** — 當前節氣及下一個節氣倒計時
 - **年份切換** — 2024/2025/2026 完整假期列表
 
-### 📊 氣候 Climate
-- **每日平均氣溫** — HKO 實時數據，SVG 折線圖
-- **過去 12 個月** — 月均溫趨勢棒型圖
-- **1991-2020 氣候標準值** — 各月份歷史平均對照
-
-### 💰 財經 Finance
-- **恒生指數** — 即時 HSI 指數，升跌幅（Yahoo Finance）
-- **港元匯率** — 兌美元、人民幣、英鎊、日元、歐元
-
-### 🛥 大嶼山巴士 NLB
-- **64 條 NLB 路線** — 大嶼山、東涌、深圳灣口岸、迪士尼
-- **路線搜尋** — 按名稱/路線號過濾
-
-### ♻ 回收資訊 Waste
-- **垃圾收集日** — 按星期顯示是否收集日
-- **三色回收箱** — 各類回收指引
-- **大型家電回收** — 預約電話及流程
-- **廚餘機** — 位置及使用說明
-
-### 📷 道路快拍 CCTV
-- **24 個確認可用攝影機** — 青葵公路、城門隧道、大老山、觀塘繞道、元朗公路
-- **一鍵全部載入** — 同時查看所有攝影機
-- **每分鐘自動更新**
 
 ---
 
@@ -135,19 +81,15 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 | 數據 | 來源 | API |
 |------|------|-----|
 | 天氣、潮汐、地震 | 香港天文台 HKO | `data.weather.gov.hk` |
-| 空氣質素 AQHI | 香港環保署 EPD | `datagovhk.blob.core.windows.net` |
 | 急症室等候時間 | 醫院管理局 HA | `ha.org.hk` |
 | MTR / 輕鐵班次 | 香港鐵路 MTR | `rt.data.gov.hk` |
 | KMB 九巴 ETA | 九龍巴士 | `data.etabus.gov.hk` |
 | CTB 城巴 ETA | 城巴 | `rt.data.gov.hk` |
 | GMB 專線小巴 | 運輸署 | `data.etagmb.gov.hk` |
-| NLB 嶼巴路線 | 新大嶼山巴士 | `rt.data.gov.hk` |
-| 停車場空位 | data.gov.hk | `api.data.gov.hk` |
-| 泳灘水質 | 環保署 EPD | 靜態數據（季度更新） |
 | 公眾假期 | 1823 | `1823.gov.hk` |
-| 恒生指數 | Yahoo Finance | `query1.finance.yahoo.com` |
-| 匯率 | Frankfurter | `api.frankfurter.app` |
-| 道路快拍 CCTV | 運輸署 | `tdcctv.data.one.gov.hk` |
+
+
+
 
 > 所有數據來自香港政府官方開放數據平台 [data.gov.hk](https://data.gov.hk)，完全免費使用。
 
@@ -161,7 +103,7 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 ### 本地運行
 ```bash
 # Clone the repo
-git clone https://github.com/realfrankhau/hk-dashboard.git
+git clone https://github.com/RealFrankhau/hk-dashboard.git
 cd hk-dashboard
 
 # Serve locally (Python)
@@ -176,7 +118,7 @@ npx serve .
 ### Replit 部署
 1. 打開 [replit.com](https://replit.com)
 2. 點「+ Create Repl」→「Import from GitHub」
-3. 輸入 `https://github.com/realfrankhau/hk-dashboard`
+3. 輸入 `https://github.com/RealFrankhau/hk-dashboard`
 4. 點「Run ▶」
 
 ---
@@ -198,16 +140,7 @@ hk-dashboard/
     ├── bus.js          # 巴士 ETA（KMB/CTB/GMB）
     ├── tides.js        # 潮汐 + 地震 + 天氣展望
     ├── health.js       # 急症室等候時間
-    ├── environment.js  # AQHI 空氣質素
-    ├── parking.js      # 停車場空位
-    ├── cctv.js         # 道路快拍
-    ├── ferry.js        # NLB 嶼巴路線
     ├── holidays.js     # 公眾假期 + 節氣
-    ├── climate.js      # 氣候數據
-    ├── beach.js        # 泳灘水質
-    ├── map.js          # 互動地圖（Leaflet.js）
-    ├── finance.js      # 恒指 + 匯率
-    ├── waste.js        # 回收資訊
     └── app.js          # 主入口（初始化 + 自動刷新）
 ```
 
@@ -251,11 +184,9 @@ MIT License — 免費使用、修改、分發。
 
 - [香港天文台 Hong Kong Observatory](https://www.hko.gov.hk/) — 天氣、潮汐、地震數據
 - [data.gov.hk](https://data.gov.hk/) — 香港政府開放數據平台
-- [香港環保署 EPD](https://www.epd.gov.hk/) — 空氣質素、泳灘水質
 - [醫院管理局 HA](https://www.ha.org.hk/) — 急症室數據
 - [香港鐵路 MTR](https://opendata.mtr.com.hk/) — 班次數據
 - [Leaflet.js](https://leafletjs.com/) — 開源地圖庫
-- [Frankfurter](https://www.frankfurter.app/) — 免費匯率 API
 
 ---
 

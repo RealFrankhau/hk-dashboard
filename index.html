@@ -16,6 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@100..900&family=WDXL+Lubrifont+TC&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -355,6 +356,22 @@
           </div>
         </div>
         <div id="w-temps" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--sp-2)"></div>
+      </div>
+
+      <!-- Tropical Cyclone Track Map -->
+      <div class="card" style="grid-column:span 3">
+        <div class="card-head">
+          <div>
+            <div class="card-title">熱帶氣旋路徑 Tropical Cyclone Track</div>
+            <div class="card-sub">過去路徑 · 預測路徑 · 可能移動範圍</div>
+          </div>
+          <span class="card-badge badge-source">香港天文台</span>
+        </div>
+        <div id="typhoon-container">
+          <div id="typhoon-map" style="height:500px;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border);background:var(--surface-2)"></div>
+          <div id="typhoon-info-table" style="margin-top:var(--sp-4);overflow-x:auto"></div>
+          <div id="typhoon-status" style="margin-top:var(--sp-2);font-size:var(--text-sm);color:var(--text-faint);text-align:center"></div>
+        </div>
       </div>
 
     </div>
@@ -1248,6 +1265,7 @@
   </div>
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/core.js"></script>
 <script src="js/weather.js"></script>
 <script src="js/transport.js"></script>
@@ -1256,6 +1274,7 @@
 <script src="js/cctv.js"></script>
 <script src="js/bus.js"></script>
 <script src="js/tides.js"></script>
+<script src="js/typhoon.js"></script>
 <script src="js/parking.js"></script>
 <script src="js/ferry.js"></script>
 <script src="js/holidays.js"></script>
