@@ -12,7 +12,7 @@
 
 A comprehensive, real-time open-source city dashboard for Hong Kong using 100% government open data APIs
 
-[🌐 Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) · [📱 Install as App](#pwa) · [🐛 Report Bug](https://github.com/badboyhong/hk-dashboard/issues) · [💡 Request Feature](https://github.com/badboyhong/hk-dashboard/issues)
+[🌐 Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) · [📱 Install as App](#pwa)
 
 </div>
 
@@ -161,7 +161,7 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 ### 本地運行
 ```bash
 # Clone the repo
-git clone https://github.com/badboyhong/hk-dashboard.git
+git clone https://github.com/realfrankhau/hk-dashboard.git
 cd hk-dashboard
 
 # Serve locally (Python)
@@ -176,7 +176,7 @@ npx serve .
 ### Replit 部署
 1. 打開 [replit.com](https://replit.com)
 2. 點「+ Create Repl」→「Import from GitHub」
-3. 輸入 `https://github.com/badboyhong/hk-dashboard`
+3. 輸入 `https://github.com/realfrankhau/hk-dashboard`
 4. 點「Run ▶」
 
 ---
@@ -239,46 +239,6 @@ hk-dashboard/
 
 ---
 
-## 🤝 Contributing · 貢獻
-
-歡迎任何形式的貢獻！
-
-```bash
-# Fork 這個 repo
-# 建立你的 feature branch
-git checkout -b feature/amazing-feature
-
-# Commit 你的改動
-git commit -m 'Add some amazing feature'
-
-# Push 到 branch
-git push origin feature/amazing-feature
-
-# 開一個 Pull Request
-```
-
-### 想貢獻什麼？
-- 🔍 找到更多可用的 CCTV 攝影機代碼
-- 🌊 整合更多 data.gov.hk 開放 API
-- 🐛 修復 bug
-- 🌐 英文翻譯改善
-- 📱 手機版體驗優化
-- 🗺 地圖新增更多圖層
-
----
-
-## 📋 Roadmap · 計劃
-
-- [ ] 用戶自定義常用路線收藏
-- [ ] GPS 定位顯示附近停車場/泳灘
-- [ ] 颱風路徑實時追蹤圖
-- [ ] 水塘存量（待環保署開放 API）
-- [ ] 交通速度圖（待運輸署開放 API）
-- [ ] 更多語言支援（普通話）
-- [ ] Apple Watch 小工具
-
----
-
 ## 📄 License · 授權
 
 MIT License — 免費使用、修改、分發。
@@ -303,6 +263,5 @@ MIT License — 免費使用、修改、分發。
 
 **如果這個項目對你有幫助，請給一個 ⭐ Star！**
 
-Made with ❤️ for Hong Kong · 為香港而做
 
 </div>

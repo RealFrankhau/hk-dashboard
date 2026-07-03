@@ -3,6 +3,18 @@
 html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; scroll-padding-top: calc(var(--nav-h) + 8px); }
 body { font-family: var(--font-body); font-size: var(--text-base); color: var(--text); background: var(--bg); min-height: 100dvh; line-height: 1.6; }
 img, svg { display: block; max-width: 100%; }
+.tide-chart {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.tide-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-width: 100%;
+}
 a { color: var(--primary); text-decoration: none; transition: color var(--transition); }
 a:hover { color: var(--primary-h); }
 button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
@@ -311,6 +323,32 @@ p, li { text-wrap: pretty; }
 
   /* Forecast chips: allow horizontal scroll */
   .scroll-row { padding-bottom: var(--sp-3); }
+
+  /* Home mini 9-day forecast: auto scale cards to screen width */
+  #h-forecast {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+    gap: var(--sp-2) !important;
+    overflow-x: visible !important;
+  }
+  #h-forecast .forecast-chip {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Weather 9-day forecast: auto scale cards to screen width */
+  #w-forecast9 {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: var(--sp-2) !important;
+    overflow-x: visible !important;
+  }
+  #w-forecast9 .forecast-chip {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+  }
 
   /* Section header: compress */
   .section-hdr-title-zh { font-size: var(--text-lg) !important; }

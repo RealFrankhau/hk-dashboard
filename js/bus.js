@@ -10,10 +10,10 @@
 const PRESET_STOPS = [
   { operator:'KMB', id:'61D7306AC40C4FB8', label:'青衣碼頭總站',      route:'44', serviceType:1, hint:'往旺角東站' },
   { operator:'KMB', id:'6129FAE857E1D5F0', label:'青衣碼頭總站',      route:'44', serviceType:1, hint:'往青衣邨' },
-  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站',    route:'S64C', serviceType:1, hint:'東涌(逸東)<>航膳東路(循環線)' },
-  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心',         route:'S64C', serviceType:1, hint:'超級一號貨站<>東涌(逸東)' },
-  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站',    route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },  
-  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心',         route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },
+  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站(去程)',    route:'S64C', serviceType:1, hint:'東涌(逸東)<>航膳東路(循環線)' },
+  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心(回程)',         route:'S64C', serviceType:1, hint:'超級一號貨站<>東涌(逸東)' },
+  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站(去程)',    route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },  
+  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心(回程)',         route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },
 ];
 
 /* ══ CACHE ══════════════════════════════════════════════════ */

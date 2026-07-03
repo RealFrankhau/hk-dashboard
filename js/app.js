@@ -118,10 +118,10 @@ function startAutoRefresh() {
     ]);
   }, 60000);
 
-  // Transport-specific refresh every 10 seconds
+  // Transport-specific refresh every 30 seconds
   setInterval(async () => {
     await safeRun('Transport', () => Transport.refresh());
-  }, 10000);
+  }, 30000);
 
   // Bus presets every 45 seconds
   setInterval(async () => {
@@ -162,56 +162,14 @@ window.showPage = function(name) {
     case 'health':
       safeRun('Health', () => Health.refresh());
       break;
-    case 'environment':
-      safeRun('Environment', () => Environment.refresh());
-      break;
     case 'bus':
       // Only reload if presets are empty
-      break;
-    case 'tides':
-      safeRun('Tides', () => Tides.refresh());
-      break;
-    case 'parking':
-      // Only load on first visit
-      if (!window._parkingLoaded) {
-        window._parkingLoaded = true;
-        safeRun('Parking', () => Parking.refresh());
-      }
-      break;
-    case 'ferry':
-      if (!window._ferryLoaded) {
-        window._ferryLoaded = true;
-        safeRun('Ferry', () => Ferry.refresh());
-      }
-      break;
-    case 'beach':
-      if (!window._beachLoaded) {
-        window._beachLoaded = true;
-        safeRun('Beach', () => Beach.refresh());
-      }
-      break;
-    case 'map':
-      safeRun('Map', () => MapView.refresh());
       break;
     case 'holidays':
       // Load on first visit
       if (!window._holidaysLoaded) {
         window._holidaysLoaded = true;
         safeRun('Holidays', () => Holidays.refresh());
-      }
-      break;
-    case 'climate':
-      // Load on first visit
-      if (!window._climateLoaded) {
-        window._climateLoaded = true;
-        safeRun('Climate', () => Climate.refresh());
-      }
-      break;
-    // CCTV: don't auto-load, let user choose cameras
-    case 'waste':
-      if (!window._wasteLoaded) {
-        window._wasteLoaded = true;
-        safeRun('Waste', () => Waste.refresh());
       }
       break;
   }

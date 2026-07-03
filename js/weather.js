@@ -445,14 +445,16 @@ async function fetchWarningInfo() {
 
 /* ── Render warnsum ──────────────────────────────────────────── */
 function renderWarnsum(data) {
-  const el = document.getElementById('w-warnsum');
-  if (!el) return;
+  // Support multiple warning containers (home + weather page)
+  const els = Array.from(document.querySelectorAll('#w-warnsum, #w-warnsum-page'));
+  if (!els.length) return;
   if (!data || Object.keys(data).length === 0) {
-    el.innerHTML = `<div class="row-item"><span style="color:var(--success)">✅ 目前沒有生效的天氣警告 No active warnings</span></div>`;
+    const emptyHtml = `<div class="row-item"><span style="color:var(--success)">✅ 目前沒有生效的天氣警告 No active warnings</span></div>`;
+    els.forEach(e => e.innerHTML = emptyHtml);
     return;
   }
   const warnings = Object.entries(data);
-  el.innerHTML = warnings.map(([outerKey, w]) => {
+  const html = warnings.map(([outerKey, w]) => {
     const subCode = w.code || outerKey || '';
     const warnInfo = WX_WARN_MAP[subCode] || WX_WARN_MAP[outerKey];
     const name = warnInfo?.text || w.name || w.type || '警告';
@@ -477,13 +479,15 @@ function renderWarnsum(data) {
       </div>
     `;
   }).join('');
+
+  els.forEach(e => e.innerHTML = html);
 }
 
 /* ── Render warningInfo details ─────────────────────────────── */
 function renderWarningInfo(details) {
-  const el = document.getElementById('w-warning-details');
-  if (!el || !details.length) return;
-  el.innerHTML = details.map(d => {
+  const els = Array.from(document.querySelectorAll('#w-warning-details, #w-warning-details-page'));
+  if (!els.length || !details.length) return;
+  const html = details.map(d => {
     const contents = d.contents || [];
     return `
       <div class="card" style="border-color:var(--warning);margin-top:var(--sp-3)">
@@ -495,6 +499,8 @@ function renderWarningInfo(details) {
       </div>
     `;
   }).join('');
+
+  els.forEach(e => e.innerHTML = html);
 }
 
 /* ── Weather Warning Banner ─────────────────────────────────── */

@@ -145,7 +145,7 @@ const Tides = (function() {
     });
 
     container.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="潮汐圖">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMin meet" style="width:100%;height:auto;overflow:visible" role="img" aria-label="潮汐圖">
         <defs>
           <linearGradient id="tideGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="var(--info)" stop-opacity="0.4"/>
@@ -274,28 +274,38 @@ const Tides = (function() {
   }
 
   /* ── Change station ──────────────────────────────────────────── */
-  async function changeStation() {
-    const sel = document.getElementById('tide-station');
-    if (sel) _currentStation = sel.value;
+  async function changeStation(el) {
+    if (el && el.value) {
+      _currentStation = el.value;
+    } else {
+      const sel = document.querySelector('.tide-station');
+      if (sel) _currentStation = sel.value;
+    }
     await loadTideData();
   }
 
   /* ── Load tide data for current station ────────────────────── */
   async function loadTideData() {
-    const cont = document.getElementById('tide-chart');
-    const stationName = document.getElementById('tide-station-name');
-    if (!cont) return;
+    const charts = Array.from(document.querySelectorAll('.tide-chart'));
+    const stationLabels = Array.from(document.querySelectorAll('.tide-station-name'));
+    const stationSelectors = Array.from(document.querySelectorAll('.tide-station'));
+    if (!charts.length) return;
 
     const station = STATIONS.find(s => s.code === _currentStation) || STATIONS[0];
-    if (stationName) stationName.textContent = station.name;
+    stationLabels.forEach(label => { label.textContent = station.name; });
+    stationSelectors.forEach(sel => { sel.value = _currentStation; });
 
-    cont.innerHTML = `<div class="skel" style="height:160px;border-radius:var(--r-lg)"></div>`;
+    charts.forEach(cont => {
+      cont.innerHTML = `<div class="skel" style="height:160px;border-radius:var(--r-lg)"></div>`;
+    });
     try {
       const data = await fetchTideData(_currentStation);
       const hours = parseTideToday(data);
-      renderTideChart(hours, cont);
+      charts.forEach(cont => renderTideChart(hours, cont));
     } catch (e) {
-      cont.innerHTML = `<div style="color:var(--error);font-size:var(--text-xs)">潮汐數據載入失敗：${e.message}</div>`;
+      charts.forEach(cont => {
+        cont.innerHTML = `<div style="color:var(--error);font-size:var(--text-xs)">潮汐數據載入失敗：${e.message}</div>`;
+      });
     }
   }
 

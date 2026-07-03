@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>香港城市儀表板 HK City Dashboard</title>
-  <meta name="description" content="香港全方位實時城市數據：天氣、交通、急症室、空氣質素、巴士到站、潮汐、地震、停車場">
+  <meta name="description" content="香港全方位實時城市數據：天氣、鐵路、巴士、醫療、假期">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0d1b2e">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -144,6 +144,19 @@
         <div style="font-size:var(--text-xs);color:var(--text-muted)">海水溫度</div>
       </div>
 
+      <!-- Weather Warnings Summary (warnsum API) -->
+      <div class="card" style="grid-column:span 4">
+        <div class="card-head">
+          <div class="card-title">天氣警告 Weather Warnings</div>
+          <span class="card-badge badge-source">HKO Warnsum</span>
+        </div>
+        <div style="margin-bottom:var(--sp-2);font-size:0.9rem;color:var(--text-faint)">使用香港天文台官方天氣警告圖示</div>
+        <div id="w-warnsum" class="row-list warning-icons">
+          <div class="skel skel-p"></div>
+        </div>
+        <div id="w-warning-details"></div>
+      </div>
+
       <!-- Warning strip -->
       <div id="h-warn" class="warn-strip hidden" style="grid-column:span 4">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -262,7 +275,7 @@
         </div>
         <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-4);align-items:center">
           <span style="font-size:var(--text-sm);color:var(--text-muted)">測潮站：</span>
-          <select id="tide-station" onchange="Tides.changeStation()"
+          <select class="tide-station" onchange="Tides.changeStation(this)"
             style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);color:var(--text);font:inherit;font-size:var(--text-sm)">
             <option value="CLK">北大嶼山 赤鱲角 (東) Chek Lap Kok (E)</option>
             <option value="CCH">長洲 Cheung Chau</option>
@@ -279,9 +292,9 @@
             <option value="TBT">元朗 尖鼻咀 Tsim Bei Tsui</option>
             <option value="WAG">香港最南端 橫瀾島 Waglan Island</option>
           </select>
-          <span id="tide-station-name" style="font-size:var(--text-sm);color:var(--primary);font-weight:600"></span>
+          <span class="tide-station-name" style="font-size:var(--text-sm);color:var(--primary);font-weight:600"></span>
         </div>
-        <div id="tide-chart">
+        <div class="tide-chart" id="weather-tide-chart">
           <div class="skel" style="height:160px;border-radius:var(--r-lg)"></div>
         </div>
       </div>
@@ -307,10 +320,10 @@
           <span class="card-badge badge-source">HKO Warnsum</span>
         </div>
         <div style="margin-bottom:var(--sp-2);font-size:0.9rem;color:var(--text-faint)">使用香港天文台官方天氣警告圖示</div>
-        <div id="w-warnsum" class="row-list warning-icons">
+        <div id="w-warnsum-page" class="row-list warning-icons">
           <div class="skel skel-p"></div>
         </div>
-        <div id="w-warning-details"></div>
+        <div id="w-warning-details-page"></div>
       </div>
 
       <!-- Local forecast text -->
@@ -612,7 +625,7 @@
         </div>
         <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-4);align-items:center">
           <span style="font-size:var(--text-sm);color:var(--text-muted)">測潮站：</span>
-          <select id="tide-station" onchange="Tides.changeStation()"
+          <select class="tide-station" onchange="Tides.changeStation(this)"
             style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);color:var(--text);font:inherit;font-size:var(--text-sm)">
             <option value="CCH">鰂魚涌 Quarry Bay</option>
             <option value="CLK">赤鱲角 Chek Lap Kok</option>
@@ -622,9 +635,9 @@
             <option value="TPK">塔門 Tap Mun</option>
             <option value="TMW" selected>屯門 Tuen Mun</option>
           </select>
-          <span id="tide-station-name" style="font-size:var(--text-sm);color:var(--primary);font-weight:600"></span>
+          <span class="tide-station-name" style="font-size:var(--text-sm);color:var(--primary);font-weight:600"></span>
         </div>
-        <div id="tide-chart">
+        <div class="tide-chart" id="tide-chart">
           <div class="skel" style="height:160px;border-radius:var(--r-lg)"></div>
         </div>
       </div>
@@ -1279,7 +1292,7 @@
     </button>
     <button class="bottom-nav-item" data-page="transport" onclick="showPage('transport')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      交通
+      鐵路
     </button>
     <button class="bottom-nav-item" data-page="bus" onclick="showPage('bus')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="7" cy="17" r="1.5" fill="currentColor"/><circle cx="17" cy="17" r="1.5" fill="currentColor"/></svg>
@@ -1289,46 +1302,9 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
       醫療
     </button>
-    <button class="bottom-nav-item" data-page="environment" onclick="showPage('environment')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      環境
-    </button>
-    <button class="bottom-nav-item" data-page="parking" onclick="showPage('parking')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>
-      停車場
-    </button>
-    <!-- Row 2: 7 items -->
-    <button class="bottom-nav-item" data-page="tides" onclick="showPage('tides')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 18c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>
-      潮汐
-    </button>
-    <button class="bottom-nav-item" data-page="beach" onclick="showPage('beach')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 18h18"/><path d="M12 2v10"/></svg>
-      泳灘
-    </button>
-    <button class="bottom-nav-item" data-page="map" onclick="showPage('map')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-      地圖
-    </button>
-    <button class="bottom-nav-item" data-page="ferry" onclick="showPage('ferry')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M12 3v17"/><path d="M9 20v-5h6v5"/></svg>
-      嶼巴
-    </button>
     <button class="bottom-nav-item" data-page="holidays" onclick="showPage('holidays')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       假期
-    </button>
-    <button class="bottom-nav-item" data-page="climate" onclick="showPage('climate')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      氣候
-    </button>
-    <button class="bottom-nav-item" data-page="cctv" onclick="showPage('cctv')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-      快拍
-    </button>
-    <button class="bottom-nav-item" data-page="waste" onclick="showPage('waste')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      回收
     </button>
   </div>
 </nav>
