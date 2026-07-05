@@ -12,7 +12,7 @@
 
 A comprehensive, real-time open-source city dashboard for Hong Kong using 100% government open data APIs
 
-[🌐 Live Demo](https://realfrankhau.github.io/hkdashboard/index.html) · [📱 Install as App](#pwa)
+[🌐 Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) · [📱 Install as App](#pwa)
 
 </div>
 
@@ -98,12 +98,12 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 ## 🚀 Quick Start · 快速開始
 
 ### 直接使用
-打開 [Live Demo](https://realfrankhau.github.io/hkdashboard/index.html) 即可，無需安裝。
+打開 [Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) 即可，無需安裝。
 
 ### 本地運行
 ```bash
 # Clone the repo
-git clone https://github.com/RealFrankhau/hkdashboard.git
+git clone https://github.com/RealFrankhau/hk-dashboard.git
 cd hk-dashboard
 
 # Serve locally (Python)
@@ -118,7 +118,7 @@ npx serve .
 ### Replit 部署
 1. 打開 [replit.com](https://replit.com)
 2. 點「+ Create Repl」→「Import from GitHub」
-3. 輸入 `https://github.com/RealFrankhau/hkdashboard`
+3. 輸入 `https://github.com/RealFrankhau/hk-dashboard`
 4. 點「Run ▶」
 
 ---
