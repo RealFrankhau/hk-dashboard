@@ -150,22 +150,22 @@ function fmtEtaChip(mins, timeStr) {
   return `<div class="eta-chip eta-ok"><span class="eta-min">${m}</span><span class="eta-unit">分</span>${timeStr ? `<span class="eta-time">${timeStr}</span>` : ''}</div>`;
 }
 
-/* ── Inject ETA chip styles (shared with bus.js) ────────────── */
-(function injectEtaStyles() {
-  if (document.getElementById('transport-eta-styles')) return;
-  const s = document.createElement('style');
-  s.id = 'transport-eta-styles';
-  s.textContent = `
-    .eta-chip { display:inline-flex; align-items:baseline; gap:2px; border-radius:8px; padding:4px 10px; font-weight:700; }
-    .eta-now  { background:rgba(239,68,68,.15); color:#f87171; font-size:12px; }
-    .eta-soon { background:rgba(234,179,8,.15); color:#fbbf24; }
-    .eta-ok   { background:rgba(34,197,94,.12); color:#4ade80; }
-    .eta-min  { font-size:18px; line-height:1; font-family:var(--font-mono); }
-    .eta-unit { font-size:10px; color:inherit; opacity:.8; margin-left:1px; }
-    .eta-time { font-size:11px; color:inherit; opacity:.7; margin-left:6px; font-family:var(--font-mono); }
-  `;
-  document.head.appendChild(s);
-})();
+//      /* ── Inject ETA chip styles (shared with bus.js) ────────────── */
+//      (function injectEtaStyles() {
+//        if (document.getElementById('transport-eta-styles')) return;
+//        const s = document.createElement('style');
+//        s.id = 'transport-eta-styles';
+//        s.textContent = `
+//          .eta-chip { display:inline-flex; align-items:baseline; gap:2px; border-radius:8px; padding:4px 10px; font-weight:700; }
+//          .eta-now  { background:rgba(239,68,68,.15); color:#f87171; font-size:12px; }
+//          .eta-soon { background:rgba(234,179,8,.15); color:#fbbf24; }
+//          .eta-ok   { background:rgba(34,197,94,.12); color:#4ade80; }
+//          .eta-min  { font-size:18px; line-height:1; font-family:var(--font-mono); }
+//          .eta-unit { font-size:10px; color:inherit; opacity:.8; margin-left:1px; }
+//          .eta-time { font-size:11px; color:inherit; opacity:.7; margin-left:6px; font-family:var(--font-mono); }
+//        `;
+//        document.head.appendChild(s);
+//      })();
 
 /* ── MTR station code → Chinese name ────────────────────────── */
 const STA_NAMES = {

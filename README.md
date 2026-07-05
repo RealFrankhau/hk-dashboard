@@ -12,7 +12,7 @@
 
 A comprehensive, real-time open-source city dashboard for Hong Kong using 100% government open data APIs
 
-[🌐 Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) · [📱 Install as App](#pwa)
+[🌐 Live Demo](https://realfrankhau.github.io/hkdashboard/index.html) · [📱 Install as App](#pwa)
 
 </div>
 
@@ -98,12 +98,12 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 ## 🚀 Quick Start · 快速開始
 
 ### 直接使用
-打開 [Live Demo](https://realfrankhau.github.io/hk-dashboard/index.html) 即可，無需安裝。
+打開 [Live Demo](https://realfrankhau.github.io/hkdashboard/index.html) 即可，無需安裝。
 
 ### 本地運行
 ```bash
 # Clone the repo
-git clone https://github.com/RealFrankhau/hk-dashboard.git
+git clone https://github.com/RealFrankhau/hkdashboard.git
 cd hk-dashboard
 
 # Serve locally (Python)
@@ -118,7 +118,7 @@ npx serve .
 ### Replit 部署
 1. 打開 [replit.com](https://replit.com)
 2. 點「+ Create Repl」→「Import from GitHub」
-3. 輸入 `https://github.com/RealFrankhau/hk-dashboard`
+3. 輸入 `https://github.com/RealFrankhau/hkdashboard`
 4. 點「Run ▶」
 
 ---
@@ -139,6 +139,7 @@ hk-dashboard/
     ├── transport.js    # 交通模組（MTR/LRT）
     ├── bus.js          # 巴士 ETA（KMB/CTB/GMB）
     ├── tides.js        # 潮汐 + 地震 + 天氣展望
+    ├── typhoon.js      # 颱風資訊及路徑
     ├── health.js       # 急症室等候時間
     ├── holidays.js     # 公眾假期 + 節氣
     └── app.js          # 主入口（初始化 + 自動刷新）
@@ -192,7 +193,7 @@ MIT License — 免費使用、修改、分發。
 
 <div align="center">
 
-**如果這個項目對你有幫助，請給一個 ⭐ Star！**
+**如果喜歡這個項目，請給一個 ⭐ Star！**
 
 
 </div>

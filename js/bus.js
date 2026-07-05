@@ -31,9 +31,23 @@ function fmtEta(iso, rmk) {
     const diff = Math.round((d - new Date()) / 60000);
     const t    = d.toLocaleTimeString('zh-HK', { hour:'2-digit', minute:'2-digit', hour12:false });
     if (diff <= 0)  return `<div class="eta-chip eta-now">即將抵達</div>`;
-    if (diff <= 3)  return `<div class="eta-chip eta-soon"><span class="eta-min">${diff}</span><span class="eta-unit">分</span><span class="eta-time">${t}</span></div>`;
-    return `<div class="eta-chip eta-ok"><span class="eta-min">${diff}</span><span class="eta-unit">分</span><span class="eta-time">${t}</span></div>`;
+    if (diff <= 3)  return `<div class="eta-chip eta-soon"><span class="eta-min">${diff}</span><span class="eta-unit">分鐘</span><span class="eta-time">${t}</span></div>`;
+    return `<div class="eta-chip eta-ok"><span class="eta-min">${diff}</span><span class="eta-unit">分鐘</span><span class="eta-time">${t}</span></div>`;
   } catch { return `<span style="color:var(--text-faint)">—</span>`; }
+}
+
+/* ── GMB ETA chip (uses diff minutes directly from API) ──── */
+function fmtEtaChipGMB(diffMin, timeStr) {
+  if (diffMin === null || diffMin === undefined || isNaN(diffMin)) {
+    return `<span class="tag tag-muted" style="font-size:12px">—</span>`;
+  }
+  if (diffMin <= 0) {
+    return `<div class="eta-chip eta-now">即將抵達</div>`;
+  }
+  if (diffMin <= 3) {
+    return `<div class="eta-chip eta-soon"><span class="eta-min">${diffMin}</span><span class="eta-unit">分</span>${timeStr ? `<span class="eta-time">${timeStr}</span>` : ''}</div>`;
+  }
+  return `<div class="eta-chip eta-ok"><span class="eta-min">${diffMin}</span><span class="eta-unit">分</span>${timeStr ? `<span class="eta-time">${timeStr}</span>` : ''}</div>`;
 }
 
 /* ══ INJECT ETA CHIP STYLES ════════════════════════════════ */
@@ -44,11 +58,11 @@ function fmtEta(iso, rmk) {
   s.textContent = `
     .eta-chip { display:inline-flex; align-items:baseline; gap:2px; border-radius:8px; padding:4px 10px; font-weight:700; }
     .eta-now  { background:rgba(239,68,68,.15); color:#f87171; font-size:12px; }
-    .eta-soon { background:rgba(234,179,8,.15); color:#fbbf24; }
-    .eta-ok   { background:rgba(34,197,94,.12); color:#4ade80; }
-    .eta-min  { font-size:18px; line-height:1; font-family:var(--font-mono); }
-    .eta-unit { font-size:10px; color:inherit; opacity:.8; margin-left:1px; }
-    .eta-time { font-size:11px; color:inherit; opacity:.7; margin-left:6px; font-family:var(--font-mono); }
+    .eta-soon { background:rgba(22,163,74,0.1); color:#16a34a; }
+    .eta-ok   { background:rgba(37,99,235,0.1); color:#2563eb; }
+    .eta-min  { font-size:11px; line-height:1; font-family:var(--inline-flex); }
+    .eta-unit { font-size:11px; color:inherit; opacity:.8; margin-left:1px; }
+    .eta-time { font-size:11px; color:inherit; opacity:2; margin-left:6px; font-family:var(--inline-flex); }
     .stop-list { display:block; width:100%; }
     .stop-btn { display:flex; align-items:center; width:100%; background:var(--surface-2);
       border:1px solid var(--border); border-radius:10px; padding:12px 16px;
@@ -506,6 +520,9 @@ window.BusSearch = BusSearch;
 /* ══ GMB MODULE ═════════════════════════════════════════════ */
 /* GMB API (data.etagmb.gov.hk) does not support CORS, so we use proxy fallbacks. */
 const GMB_PROXIES = [
+  // Local Node.js server proxy (when running via `node server.js`)
+  url => `/gmb-proxy/${new URL(url).pathname}`,
+  // Third-party CORS proxies
   url => `https://proxy.cors.sh/${url}`,
   url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
 ];
@@ -542,10 +559,36 @@ function normalizeRoutesList(data) {
 
 async function gmbFetch(path, retries = 2) {
   const url = `https://data.etagmb.gov.hk${path}`;
+  const TIMEOUT_MS = 8000;
+
+  async function fetchWithTimeout(resource, options = {}, timeoutMs = TIMEOUT_MS) {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), timeoutMs);
+    try {
+      const r = await fetch(resource, { ...options, signal: ac.signal });
+      return r;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   for (let attempt = 0; attempt <= retries; attempt++) {
+    // Try direct fetch first (service worker handles CORS if active)
+    try {
+      const r = await fetchWithTimeout(url, {
+        headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
+      });
+      if (r.ok) {
+        const text = await r.text();
+        return JSON.parse(text);
+      }
+    } catch (e) {
+      // Direct fetch failed (CORS, timeout, or no SW), try proxies below.
+    }
+    // Fallback: try CORS proxies
     for (const buildProxyUrl of GMB_PROXIES) {
       try {
-        const r = await fetch(buildProxyUrl(url), {
+        const r = await fetchWithTimeout(buildProxyUrl(url), {
           headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
         });
         if (!r.ok) continue;
@@ -664,11 +707,13 @@ const Bus_GMB = (function() {
             const stopSeq = String(s.stop_seq || (i+1));
             const stopName = String(s.name_tc || s.stop_id || '');
             const safeRouteId = String(routeIdValue).replace(/'/g, "\\'");
-            const safeSeq = stopSeq.replace(/'/g, "\\'");
+            const safeRouteSeq = String(directionSeq).replace(/'/g, "\\'");
+            const safeStopSeq = stopSeq.replace(/'/g, "\\'");
             const safeName = stopName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             return `
               <button type="button" class="stop-btn gmb-stop"
-                onclick="Bus_GMB.loadETA('${safeRouteId}', '${safeSeq}', '${safeName}')"
+                data-route="${safeRouteId}" data-route-seq="${safeRouteSeq}" data-stop-seq="${safeStopSeq}" data-name="${safeName}"
+                onclick="Bus_GMB.loadETA('${safeRouteSeq}', '${safeStopSeq}', '${safeRouteId}', '${safeName}')"
                 style="display:flex;align-items:center;justify-content:space-between;gap:10px;
                        background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
                        padding:8px 12px;font-size:13px;color:var(--text);cursor:pointer;text-align:left">
@@ -689,25 +734,36 @@ const Bus_GMB = (function() {
     }
   }
 
-  async function loadETA(routeId, stopSeq, stopName) {
+  async function loadETA(routeSeq, stopSeq, routeId, stopName) {
     const cont = document.getElementById('gmb-eta-result');
     if (!cont) return;
     cont.scrollIntoView({ behavior:'smooth', block:'start' });
     cont.innerHTML = `<div style="display:flex;align-items:center;gap:8px;color:var(--text-faint);font-size:12px"><div class="bus-spin"></div>查詢到站時間…</div>`;
     try {
-      const data = await gmbFetch(`/eta/route-stop/${routeId}/${stopSeq}`);
-      const etas = Array.isArray(data?.data?.etas) ? data.data.etas : (Array.isArray(data?.data?.eta) ? data.data.eta : []);
+      // Correct API URL: /eta/route-stop/{route_id}/{route_seq}/{stop_seq}
+      const data = await gmbFetch(`/eta/route-stop/${routeId}/${routeSeq}/${stopSeq}`);
+      console.log('[GMB] ETA response:', JSON.stringify(data).slice(0,500));
+      // Response structure: { data: { stop_id, enabled, eta: [...] } }
+      const etas = Array.isArray(data?.data?.eta) ? data.data.eta : [];
       const now  = new Date().toLocaleTimeString('zh-HK', {hour12:false,hour:'2-digit',minute:'2-digit'});
-      if (Array.isArray(etas) && etas.length) {
+      if (etas.length) {
         cont.innerHTML = `
           <div style="font-size:14px;font-weight:700;margin-bottom:10px">📍 ${escapeAttr(stopName)}</div>
-          ${etas.slice(0,4).map((e,i) => `
+          ${etas.slice(0,4).map((e,i) => {
+            const diff = parseInt(e.diff, 10);
+            const timeStr = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('zh-HK', {hour:'2-digit',minute:'2-digit',hour12:false}) : '';
+            const remark = e.remarks_tc || e.remarks_en || '';
+            return `
             <div style="display:flex;align-items:center;justify-content:space-between;
-                        padding:10px 14px;background:var(--surface-2);border-radius:10px;margin-bottom:6px">
-              <span style="font-size:13px;font-weight:600">第 ${i+1} 班</span>
-              <div>${fmtEta(e.timestamp, e.remarks_tc || e.remarks_en || e.remarks_sc)}</div>
+                        padding:10px 14px;background:var(--surface-2);border-radius:10px;margin-bottom:6px;gap:8px">
+              <span style="font-size:13px;font-weight:600;min-width:44px">第 ${e.eta_seq || (i+1)} 班</span>
+              <span style="flex:1;font-size:11px;color:var(--text-muted);text-align:left">${escapeAttr(remark)}</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                ${fmtEtaChipGMB(diff, timeStr)}
+              </div>
             </div>
-          `).join('')}
+          `;
+          }).join('')}
           <div style="font-size:10px;color:var(--text-faint);margin-top:6px">更新 ${now}</div>
         `;
       } else {
@@ -745,10 +801,11 @@ document.addEventListener('click', function(e) {
   // GMB stop buttons
   const gmbBtn = e.target.closest('.gmb-stop');
   if (gmbBtn) {
-    const route = gmbBtn.dataset.route;
-    const seq   = gmbBtn.dataset.seq;
-    const name  = gmbBtn.dataset.name;
-    if (route && seq) Bus_GMB.loadETA(route, seq, name);
+    const route    = gmbBtn.dataset.route;
+    const routeSeq = gmbBtn.dataset.routeSeq;
+    const stopSeq  = gmbBtn.dataset.stopSeq;
+    const name     = gmbBtn.dataset.name;
+    if (route && routeSeq && stopSeq) Bus_GMB.loadETA(routeSeq, stopSeq, route, name);
     return;
   }
 });

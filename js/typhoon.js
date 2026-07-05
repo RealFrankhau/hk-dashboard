@@ -1,17 +1,35 @@
 /* ============================================================
    typhoon.js — Tropical Cyclone Track Map (Leaflet + HKO XML)
-   香港城市儀表板 v2
+   香港城市儀表板 v4 — 全面改進版
    ============================================================ */
 
 'use strict';
 
-/* ── Fetch helper ──────────────────────────────────────────── */
-// Strategy:
-//   1. Try the local dev server proxy (http://localhost:3000/hko-proxy/...)
-//      — works when the dashboard is served via the local Node.js server.
-//   2. Fall back to direct fetch — works when served from a real HTTP
-//      server with proper CORS headers, or when the HKO API adds them.
-//   3. Fall back to a CORS proxy as last resort.
+/* ── Constants ──────────────────────────────────────────────── */
+const TC_LIST_URL = 'https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml';
+const HK_COORDS = { lat: 22.3193, lon: 114.1694 };
+const CACHE_PREFIX = 'hk_tc_';
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+/* ── Fetch helper with caching ──────────────────────────────── */
+function cacheGet(key) {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (Date.now() - entry.ts > CACHE_TTL) {
+      localStorage.removeItem(CACHE_PREFIX + key);
+      return null;
+    }
+    return entry.data;
+  } catch (_) { return null; }
+}
+
+function cacheSet(key, data) {
+  try {
+    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ ts: Date.now(), data }));
+  } catch (_) { /* quota exceeded — ignore */ }
+}
 
 const CORS_PROXIES = [
   'https://api.allorigins.win/raw?url=',
@@ -19,9 +37,7 @@ const CORS_PROXIES = [
 ];
 
 function toHkoProxyUrl(url) {
-  // Convert http:// to https:// for HKO URLs
   const safe = url.replace(/^http:\/\//i, 'https://');
-  // Extract the path from the HKO URL
   const hkoUrl = new URL(safe);
   return `http://localhost:3000/hko-proxy${hkoUrl.pathname}${hkoUrl.search}`;
 }
@@ -34,7 +50,7 @@ async function fetchWithFallback(url) {
     if (res.ok) return res;
   } catch (_) { /* fall through */ }
 
-  // 2. Try direct fetch (works when served from a real HTTP server)
+  // 2. Try direct fetch
   try {
     const res = await fetch(url, { mode: 'cors' });
     if (res.ok) return res;
@@ -51,7 +67,43 @@ async function fetchWithFallback(url) {
   throw new Error('Failed to fetch: ' + url);
 }
 
-const TC_LIST_URL = 'https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml';
+/* ── Great-circle distance & bearing ────────────────────────── */
+function calcDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calcBearing(lat1, lon1, lat2, lon2) {
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
+  const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+            Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
+  let brng = Math.atan2(y, x) * 180 / Math.PI;
+  return (brng + 360) % 360;
+}
+
+function bearingToText(brng) {
+  const dirs = ['北', '東北', '東', '東南', '南', '西南', '西', '西北'];
+  const idx = Math.round(brng / 45) % 8;
+  return dirs[idx];
+}
+
+function formatDistance(distKm) {
+  if (distKm < 100) return `${Math.round(distKm)} 公里`;
+  return `${Math.round(distKm / 10) * 10} 公里`;
+}
+
+function formatDistanceBearing(lat, lon) {
+  const dist = calcDistance(HK_COORDS.lat, HK_COORDS.lon, lat, lon);
+  const brng = calcBearing(HK_COORDS.lat, HK_COORDS.lon, lat, lon);
+  const dir = bearingToText(brng);
+  return `距離香港以${dir}約 ${formatDistance(dist)}`;
+}
 
 /* ── Parse HKO TC track XML ────────────────────────────────── */
 function parseTcTrackXml(xmlText) {
@@ -63,10 +115,7 @@ function parseTcTrackXml(xmlText) {
     return el ? el.textContent.trim() : '';
   };
 
-  // Bulletin info
   const bulletinTime = getTagText(doc, 'BulletinTime');
-
-  // TC name
   const tcName = getTagText(doc, 'TropicalCycloneName');
 
   // Past positions
@@ -128,7 +177,7 @@ function parseTcTrackXml(xmlText) {
     }
   });
 
-  // Potential Track Area polygon (if exists)
+  // Potential Track Area polygon
   const areaEntries = doc.querySelectorAll('PotentialTrackArea > Location');
   const polygonCoords = [];
   areaEntries.forEach(entry => {
@@ -142,12 +191,9 @@ function parseTcTrackXml(xmlText) {
   });
 
   return {
-    bulletinTime,
-    tcName,
-    pastPositions,
-    currentPos,
-    forecastPositions,
-    polygonCoords,
+    bulletinTime, tcName,
+    pastPositions, currentPos,
+    forecastPositions, polygonCoords,
   };
 }
 
@@ -162,16 +208,16 @@ function parseCoord(str) {
   return val;
 }
 
-/* ── Intensity color mapping ───────────────────────────────── */
+/* ── Intensity color mapping (user-specified) ──────────────── */
 function getIntensityColor(intensity) {
   const map = {
-    'Super Typhoon': '#dc2626',
-    'Severe Typhoon': '#ea580c',
-    'Typhoon': '#f59e0b',
-    'Severe Tropical Storm': '#84cc16',
-    'Tropical Storm': '#22d3ee',
-    'Tropical Depression': '#60a5fa',
-    'Low Pressure Area': '#94a3b8',
+    'Super Typhoon':       '#a855f7', // 紫
+    'Severe Typhoon':      '#ec4899', // 粉紅
+    'Typhoon':             '#ef4444', // 紅
+    'Severe Tropical Storm': '#3b82f6', // 藍
+    'Tropical Storm':      '#22c55e', // 綠
+    'Tropical Depression': '#333333', // 黑
+    'Low Pressure Area':   '#94a3b8',
   };
   return map[intensity] || '#94a3b8';
 }
@@ -192,14 +238,35 @@ function formatTcTime(isoStr) {
   }
 }
 
+/* ── Show/hide empty state ─────────────────────────────────── */
+function showEmptyState(visible) {
+  const emptyEl = document.getElementById('typhoon-empty');
+  const mapEl = document.getElementById('typhoon-map');
+  const infoEl = document.getElementById('typhoon-info-table');
+  const statusEl = document.getElementById('typhoon-status');
+  const selectorEl = document.getElementById('tc-selector');
+  if (emptyEl) emptyEl.style.display = visible ? 'block' : 'none';
+  if (mapEl) mapEl.style.display = visible ? 'none' : 'block';
+  if (infoEl) infoEl.style.display = visible ? 'none' : 'block';
+  if (selectorEl) selectorEl.style.display = 'none';
+  if (statusEl) statusEl.textContent = visible ? '' : statusEl.textContent;
+}
+
 /* ── Main fetch + render ───────────────────────────────────── */
 async function fetchTyphoonData() {
   const mapEl = document.getElementById('typhoon-map');
   const infoEl = document.getElementById('typhoon-info-table');
   const statusEl = document.getElementById('typhoon-status');
+  const selectorEl = document.getElementById('tc-selector');
   if (!mapEl) return;
 
-  // Show loading
+  // Try loading from cache first
+  const cachedList = cacheGet('tc_list');
+  if (cachedList && cachedList.entries.length > 0) {
+    // Show cached data immediately while fetching fresh
+    loadTcFromList(cachedList.entries, cachedList.selectedIndex || 0);
+  }
+
   if (statusEl) statusEl.textContent = '正在載入熱帶氣旋資料…';
 
   try {
@@ -210,49 +277,93 @@ async function fetchTyphoonData() {
     const listDoc = new DOMParser().parseFromString(listXml, 'text/xml');
 
     const tcEntries = listDoc.querySelectorAll('TropicalCyclone');
-    if (!tcEntries.length) {
+    const entries = [];
+
+    tcEntries.forEach(tc => {
+      const id = tc.querySelector('TropicalCycloneID')?.textContent?.trim() || '';
+      const cn = tc.querySelector('TropicalCycloneChineseName')?.textContent?.trim() || '';
+      const en = tc.querySelector('TropicalCycloneEnglishName')?.textContent?.trim() || '';
+      const url = tc.querySelector('TropicalCycloneURL')?.textContent?.trim() || '';
+      if (id && url) entries.push({ id, cn, en, url });
+    });
+
+    // Cache the list
+    cacheSet('tc_list', { entries, selectedIndex: 0 });
+
+    if (!entries.length) {
+      showEmptyState(true);
       if (statusEl) statusEl.textContent = '目前沒有活躍的熱帶氣旋 No active tropical cyclones';
-      if (mapEl) mapEl.innerHTML = '';
-      if (infoEl) infoEl.innerHTML = '';
       return;
     }
 
-    // Use the first TC (most recent/active)
-    const tc = tcEntries[0];
-    const tcId = tc.querySelector('TropicalCycloneID')?.textContent?.trim() || '';
-    const tcCnName = tc.querySelector('TropicalCycloneChineseName')?.textContent?.trim() || '';
-    const tcEnName = tc.querySelector('TropicalCycloneEnglishName')?.textContent?.trim() || '';
-    const tcUrl = tc.querySelector('TropicalCycloneURL')?.textContent?.trim() || '';
+    // Build dropdown
+    selectorEl.innerHTML = entries.map((e, i) =>
+      `<option value="${i}">${e.cn} ${e.en} (${e.id})</option>`
+    ).join('');
+    selectorEl.style.display = 'inline-block';
+    selectorEl.onchange = () => {
+      const idx = parseInt(selectorEl.value, 10);
+      loadTcFromList(entries, idx);
+    };
 
-    if (!tcUrl) {
-      if (statusEl) statusEl.textContent = '無法取得熱帶氣旋路徑資料';
-      return;
-    }
-
-    // 2. Fetch individual track XML
-    const trackRes = await fetchWithFallback(tcUrl);
-    if (!trackRes.ok) throw new Error(`HTTP ${trackRes.status}`);
-    const trackXml = await trackRes.text();
-    const data = parseTcTrackXml(trackXml);
-
-    if (!data.currentPos && !data.pastPositions.length) {
-      if (statusEl) statusEl.textContent = '暫無路徑資料';
-      return;
-    }
-
-    // 3. Render map
-    renderTyphoonMap(data, tcCnName, tcEnName, tcId);
-
-    // 4. Render info table
-    renderTyphoonInfo(data, tcCnName, tcEnName, tcId);
-
-    if (statusEl) statusEl.textContent = `更新時間：${data.bulletinTime ? formatTcTime(data.bulletinTime) : '--'} · 資料來源：香港天文台`;
+    // Load first TC
+    await loadTcFromList(entries, 0);
 
   } catch (e) {
     console.error('Typhoon fetch error:', e);
-    if (statusEl) statusEl.textContent = '無法載入熱帶氣旋資料';
-    if (mapEl) mapEl.innerHTML = '';
-    if (infoEl) infoEl.innerHTML = '';
+    // If we have cached data, don't show error
+    if (!cachedList) {
+      if (statusEl) statusEl.textContent = '無法載入熱帶氣旋資料';
+      showEmptyState(true);
+    }
+  }
+}
+
+/* ── Load a specific TC from the entries list ──────────────── */
+async function loadTcFromList(entries, index) {
+  const mapEl = document.getElementById('typhoon-map');
+  const infoEl = document.getElementById('typhoon-info-table');
+  const statusEl = document.getElementById('typhoon-status');
+  const selectorEl = document.getElementById('tc-selector');
+
+  const tc = entries[index];
+  if (!tc) return;
+
+  // Update dropdown selection
+  if (selectorEl) selectorEl.value = index;
+
+  showEmptyState(false);
+
+  if (statusEl) statusEl.textContent = `正在載入 ${tc.cn} ${tc.en} 的路徑資料…`;
+
+  try {
+    // Check cache for this TC's track data
+    const cacheKey = 'track_' + tc.id;
+    let data = cacheGet(cacheKey);
+
+    if (!data) {
+      const trackRes = await fetchWithFallback(tc.url);
+      if (!trackRes.ok) throw new Error(`HTTP ${trackRes.status}`);
+      const trackXml = await trackRes.text();
+      data = parseTcTrackXml(trackXml);
+      cacheSet(cacheKey, data);
+    }
+
+    if (!data.currentPos && !data.pastPositions.length) {
+      if (statusEl) statusEl.textContent = `${tc.cn} ${tc.en} — 暫無路徑資料`;
+      return;
+    }
+
+    renderTyphoonMap(data, tc.cn, tc.en, tc.id);
+    renderTyphoonInfo(data, tc.cn, tc.en, tc.id);
+
+    if (statusEl) {
+      statusEl.textContent = `更新時間：${data.bulletinTime ? formatTcTime(data.bulletinTime) : '--'} · 資料來源：香港天文台`;
+    }
+
+  } catch (e) {
+    console.error(`Error loading TC ${tc.id}:`, e);
+    if (statusEl) statusEl.textContent = `無法載入 ${tc.cn} ${tc.en} 的路徑資料`;
   }
 }
 
@@ -269,10 +380,9 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     typhoonMapInstance = null;
   }
 
-  // Clear container
   mapEl.innerHTML = '';
 
-  // Determine bounds to fit all points
+  // Collect all points for bounds
   const allPoints = [];
   data.pastPositions.forEach(p => allPoints.push([p.lat, p.lon]));
   if (data.currentPos) allPoints.push([data.currentPos.lat, data.currentPos.lon]);
@@ -283,22 +393,20 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     return;
   }
 
-  // Initialize map
+  // Initialize map with CartoDB light tiles
   const map = L.map(mapEl, {
     zoomControl: true,
     attributionControl: false,
   });
 
-  // Add dark tile layer (matches dashboard theme)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 18,
   }).addTo(map);
 
-  // Fit bounds with padding
   const bounds = L.latLngBounds(allPoints);
   map.fitBounds(bounds, { padding: [40, 40] });
 
-  // ── 1. Potential Track Area polygon (if exists) ──
+  // ── 1. Potential Track Area polygon ──
   if (data.polygonCoords.length >= 3) {
     L.polygon(data.polygonCoords, {
       color: '#f59e0b',
@@ -309,20 +417,20 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }).addTo(map).bindPopup('可能移動範圍<br>Potential Track Area');
   }
 
-  // ── 2. Past track (red polyline) ──
+  // ── 2. Past track — black solid line ──
   const pastLatLngs = [];
   data.pastPositions.forEach(p => pastLatLngs.push([p.lat, p.lon]));
   if (data.currentPos) pastLatLngs.push([data.currentPos.lat, data.currentPos.lon]);
 
   if (pastLatLngs.length >= 2) {
     L.polyline(pastLatLngs, {
-      color: '#ef4444',
+      color: '#222222',
       weight: 3,
       opacity: 0.8,
     }).addTo(map);
   }
 
-  // ── 3. Past position markers (red dots) ──
+  // ── 3. Past position markers (dark dots) ──
   data.pastPositions.forEach(p => {
     const timeStr = formatTcTime(p.time);
     const popup = `
@@ -335,8 +443,8 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
       </div>`;
     L.circleMarker([p.lat, p.lon], {
       radius: 5,
-      color: '#ef4444',
-      fillColor: '#ef4444',
+      color: '#444444',
+      fillColor: '#444444',
       fillOpacity: 0.9,
       weight: 1,
     }).addTo(map).bindPopup(popup);
@@ -386,26 +494,37 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     L.marker([cp.lat, cp.lon], { icon }).addTo(map);
   }
 
-  // ── 5. Forecast track (dashed red polyline) ──
-  const forecastLatLngs = [];
-  if (data.currentPos) forecastLatLngs.push([data.currentPos.lat, data.currentPos.lon]);
-  data.forecastPositions.forEach(p => forecastLatLngs.push([p.lat, p.lon]));
+  // ── 5. Forecast track — segmented by intensity color ──
+  const forecastSegments = [];
+  if (data.currentPos) {
+    forecastSegments.push({ lat: data.currentPos.lat, lon: data.currentPos.lon, intensity: data.currentPos.intensity });
+  }
+  data.forecastPositions.forEach(p => {
+    forecastSegments.push({ lat: p.lat, lon: p.lon, intensity: p.intensity });
+  });
 
-  if (forecastLatLngs.length >= 2) {
-    L.polyline(forecastLatLngs, {
-      color: '#ef4444',
-      weight: 2,
-      opacity: 0.6,
-      dashArray: '8 6',
-    }).addTo(map);
+  if (forecastSegments.length >= 2) {
+    for (let i = 0; i < forecastSegments.length - 1; i++) {
+      const segColor = getIntensityColor(forecastSegments[i + 1].intensity);
+      L.polyline([
+        [forecastSegments[i].lat, forecastSegments[i].lon],
+        [forecastSegments[i + 1].lat, forecastSegments[i + 1].lon],
+      ], {
+        color: segColor,
+        weight: 3,
+        opacity: 0.7,
+        dashArray: '6 4',
+      }).addTo(map);
+    }
   }
 
-  // ── 6. Forecast position markers (white dots with time labels) ──
+  // ── 6. Forecast position markers (colored by intensity with time labels) ──
   // Key forecast points: 12h (index ~21), 24h, 36h (index ~45), 48h, 72h (index ~69)
   const keyForecastIndices = [21, 45, 69];
   data.forecastPositions.forEach(p => {
     const isKey = keyForecastIndices.includes(p.index);
-    const radius = isKey ? 6 : 4;
+    const radius = isKey ? 7 : 5;
+    const fcColor = getIntensityColor(p.intensity);
 
     const timeStr = p.time ? formatTcTime(p.time) : '';
     const popup = `
@@ -419,10 +538,10 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
 
     L.circleMarker([p.lat, p.lon], {
       radius,
-      color: '#ffffff',
-      fillColor: isKey ? '#fbbf24' : '#ffffff',
+      color: fcColor,
+      fillColor: fcColor,
       fillOpacity: 0.9,
-      weight: 1.5,
+      weight: 2,
     }).addTo(map).bindPopup(popup);
 
     // Add time label for key forecast points
@@ -430,10 +549,10 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
       const labelIcon = L.divIcon({
         className: 'tc-fc-label',
         html: `<div style="
-          color:white;
+          color:#333;
           font-size:10px;
-          font-weight:600;
-          text-shadow:0 1px 3px rgba(0,0,0,0.8);
+          font-weight:700;
+          text-shadow:0 0 3px rgba(255,255,255,0.9);
           white-space:nowrap;
         ">${p.index}h</div>`,
         iconSize: [0, 0],
@@ -448,20 +567,28 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
   legend.onAdd = function() {
     const div = L.DomUtil.create('div', 'tc-legend');
     div.style.cssText = `
-      background:rgba(15,23,42,0.9);
-      color:white;
+      background:rgba(255,255,255,0.95);
+      color:#333;
       padding:8px 12px;
       border-radius:6px;
       font-size:11px;
       line-height:1.8;
-      border:1px solid rgba(255,255,255,0.1);
+      border:1px solid rgba(0,0,0,0.15);
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
     `;
     div.innerHTML = `
-      <div><span style="display:inline-block;width:12px;height:3px;background:#ef4444;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
-      <div><span style="display:inline-block;width:12px;height:2px;background:#ef4444;border-top:2px dashed #ef4444;margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#fbbf24;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 預測位置 Forecast Position</div>
-      ${data.polygonCoords.length >= 3 ? '<div><span style="display:inline-block;width:12px;height:3px;background:#f59e0b;margin-right:6px;vertical-align:middle"></span> 可能移動範圍 Potential Track Area</div>' : ''}
+      <div style="font-weight:700;margin-bottom:4px">圖例 Legend</div>
+      <div><span style="display:inline-block;width:12px;height:3px;background:#222;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
+      <div><span style="display:inline-block;width:12px;height:3px;background:#ef4444;margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
+      <div style="margin-top:4px;font-weight:600">強度 Intensity:</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#333;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶低氣壓</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶風暴</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強烈熱帶風暴</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 颱風</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#ec4899;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強颱風</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#a855f7;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 超強颱風</div>
+      ${data.polygonCoords.length >= 3 ? '<div style="margin-top:4px"><span style="display:inline-block;width:12px;height:3px;background:#f59e0b;margin-right:6px;vertical-align:middle"></span> 可能移動範圍</div>' : ''}
     `;
     return div;
   };
@@ -473,7 +600,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
   typhoonMapInstance = map;
 }
 
-/* ── Render info table ─────────────────────────────────────── */
+/* ── Render info table (with pressure & distance) ──────────── */
 function renderTyphoonInfo(data, cnName, enName, tcId) {
   const el = document.getElementById('typhoon-info-table');
   if (!el) return;
@@ -494,15 +621,21 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
   const forecastRows = keyHours.map(h => {
     const f = forecastMap[h];
     if (!f) return null;
+    const distText = formatDistanceBearing(f.lat, f.lon);
     return `
       <tr>
-        <td>+${h}h</td>
-        <td>${f.lat.toFixed(1)}°${f.lat >= 0 ? 'N' : 'S'}</td>
-        <td>${f.lon.toFixed(1)}°${f.lon >= 0 ? 'E' : 'W'}</td>
-        <td>${f.intensity || '--'}</td>
-        <td>${f.wind || '--'}</td>
+        <td data-label="時段">&nbsp;&nbsp;+${h}h</td>
+        <td data-label="緯度">&nbsp;&nbsp;${f.lat.toFixed(1)}°${f.lat >= 0 ? 'N' : 'S'}</td>
+        <td data-label="經度">&nbsp;&nbsp;${f.lon.toFixed(1)}°${f.lon >= 0 ? 'E' : 'W'}</td>
+        <td data-label="強度">&nbsp;&nbsp;${f.intensity || '--'}</td>
+        <td data-label="風速">&nbsp;&nbsp;${f.wind || '--'}</td>
+        <td data-label="氣壓">&nbsp;&nbsp;--</td>
+        <td data-label="距港距離" style="font-size:14px">&nbsp;&nbsp;${distText}</td>
+        <td data-label="時間">&nbsp;&nbsp;${f.time ? formatTcTime(f.time) : '--'}</td>
       </tr>`;
   }).filter(Boolean).join('');
+
+  const currentDistText = formatDistanceBearing(cp.lat, cp.lon);
 
   el.innerHTML = `
     <table class="tc-info-table" style="
@@ -513,7 +646,7 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
     ">
       <thead>
         <tr style="border-bottom:2px solid var(--border)">
-          <th colspan="6" style="text-align:left;padding:var(--sp-2) var(--sp-3);font-size:var(--text-base)">
+          <th colspan="8" style="text-align:left;padding:var(--sp-2) var(--sp-3);font-size:var(--text-base)">
             ${cnName} ${enName} (${tcId})
           </th>
         </tr>
@@ -523,17 +656,21 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">經度</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">強度</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">風速</th>
+          <th style="padding:var(--sp-2) var(--sp-3);text-align:left">氣壓</th>
+          <th style="padding:var(--sp-2) var(--sp-3);text-align:left">距港距離</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">時間</th>
         </tr>
       </thead>
       <tbody>
         <tr style="border-bottom:1px solid var(--border);background:var(--surface-2)">
-          <td style="padding:var(--sp-2) var(--sp-3);font-weight:700;color:var(--primary)">現時</td>
-          <td style="padding:var(--sp-2) var(--sp-3)">${cp.lat.toFixed(1)}°${cp.lat >= 0 ? 'N' : 'S'}</td>
-          <td style="padding:var(--sp-2) var(--sp-3)">${cp.lon.toFixed(1)}°${cp.lon >= 0 ? 'E' : 'W'}</td>
-          <td style="padding:var(--sp-2) var(--sp-3)">${cp.intensity || '--'}</td>
-          <td style="padding:var(--sp-2) var(--sp-3)">${cp.wind || '--'}</td>
-          <td style="padding:var(--sp-2) var(--sp-3)">${cp.time ? formatTcTime(cp.time) : '--'}</td>
+          <td data-label="時段" style="padding:var(--sp-2) var(--sp-3);font-weight:700;color:var(--primary)">現時</td>
+          <td data-label="緯度" style="padding:var(--sp-2) var(--sp-3)">${cp.lat.toFixed(1)}°${cp.lat >= 0 ? 'N' : 'S'}</td>
+          <td data-label="經度" style="padding:var(--sp-2) var(--sp-3)">${cp.lon.toFixed(1)}°${cp.lon >= 0 ? 'E' : 'W'}</td>
+          <td data-label="強度" style="padding:var(--sp-2) var(--sp-3)">${cp.intensity || '--'}</td>
+          <td data-label="風速" style="padding:var(--sp-2) var(--sp-3)">${cp.wind || '--'}</td>
+          <td data-label="氣壓" style="padding:var(--sp-2) var(--sp-3)">${cp.pressure || '--'}</td>
+          <td data-label="距港距離" style="padding:var(--sp-2) var(--sp-3);font-size:14px">${currentDistText}</td>
+          <td data-label="時間" style="padding:var(--sp-2) var(--sp-3)">${cp.time ? formatTcTime(cp.time) : '--'}</td>
         </tr>
         ${forecastRows}
       </tbody>

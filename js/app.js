@@ -77,14 +77,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   // 1. Show home page
   showPage('home');
 
-  // 2. Initial data load (parallel)
-  await loadAllData();
+  // 2. Initial data load (parallel) — fire bus presets at the same time, don't wait
+  loadAllData();
+  initBusPresets();
 
   // 3. Start auto-refresh loop
   startAutoRefresh();
-
-  // 4. Render bus preset slots
-  initBusPresets();
 
   console.log('[HK Dashboard v4] Ready.');
 });
@@ -96,7 +94,6 @@ async function loadAllData() {
     safeRun('Transport',    () => Transport.refresh()),
     safeRun('Health',       () => Health.refresh()),
     safeRun('Environment',  () => Environment.refresh()),
-    safeRun('Finance',      () => typeof Finance !== 'undefined' ? Finance.refresh() : Promise.resolve()),
     safeRun('Typhoon',      () => Typhoon.refresh()),
   ]);
 }
@@ -128,13 +125,6 @@ function startAutoRefresh() {
   setInterval(async () => {
     await safeRun('Bus', () => Bus.refresh());
   }, 45000);
-
-  // Parking every 5 minutes
-  setInterval(async () => {
-    if (window._currentPage === 'parking') {
-      await safeRun('Parking', () => Parking.refresh());
-    }
-  }, 300000);
 
   // Typhoon every 10 minutes
   setInterval(async () => {

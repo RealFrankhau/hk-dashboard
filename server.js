@@ -15,6 +15,7 @@ const https = require('https');
 
 const PORT = 3000;
 const HKO_HOST = 'www.weather.gov.hk';
+const GMB_HOST = 'data.etagmb.gov.hk';
 
 // ── MIME types ──────────────────────────────────────────────
 const MIME = {
@@ -82,6 +83,41 @@ function proxyHko(res, hkoPath) {
   proxyReq.end();
 }
 
+// ── Proxy GMB API ──────────────────────────────────────────
+function proxyGmb(res, gmbPath) {
+  const options = {
+    hostname: GMB_HOST,
+    path: gmbPath,
+    method: 'GET',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'application/json',
+    },
+  };
+
+  const proxyReq = https.request(options, (proxyRes) => {
+    const chunks = [];
+    proxyRes.on('data', chunk => chunks.push(chunk));
+    proxyRes.on('end', () => {
+      const body = Buffer.concat(chunks);
+      res.writeHead(proxyRes.statusCode, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=30',
+      });
+      res.end(body);
+    });
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error('GMB Proxy error:', err.message);
+    res.writeHead(502, { 'Content-Type': 'text/plain' });
+    res.end('Proxy Error: ' + err.message);
+  });
+
+  proxyReq.end();
+}
+
 // ── Request handler ─────────────────────────────────────────
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -92,6 +128,14 @@ const server = http.createServer((req, res) => {
     const hkoPath = pathname.replace('/hko-proxy', '');
     console.log(`[proxy] ${HKO_HOST}${hkoPath}`);
     proxyHko(res, hkoPath);
+    return;
+  }
+
+  // ── GMB API proxy route ──
+  if (pathname.startsWith('/gmb-proxy/')) {
+    const gmbPath = pathname.replace('/gmb-proxy', '');
+    console.log(`[proxy] ${GMB_HOST}${gmbPath}`);
+    proxyGmb(res, gmbPath);
     return;
   }
 
