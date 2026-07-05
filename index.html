@@ -99,7 +99,14 @@
     <button onclick="document.getElementById('warning-banner').style.display='none'"
       style="color:white;opacity:.7;font-size:18px;line-height:1">✕</button>
   </div>
-  <style>@keyframes pulse-warn{0%,100%{opacity:1}50%{opacity:.85}} @keyframes pulse-warn-fast{0%,100%{opacity:1}50%{opacity:.6}}</style>
+  <style>@keyframes pulse-warn{0%,100%{opacity:1}50%{opacity:.85}} @keyframes pulse-warn-fast{0%,100%{opacity:1}50%{opacity:.6}}
+.bus-quick-routes button{transition:all .15s ease;cursor:pointer}
+.bus-quick-routes button:hover{background:var(--primary)!important;color:white!important;border-color:var(--primary)!important;transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.bus-quick-routes button:active{transform:translateY(0);box-shadow:none}
+.gmb-route-buttons button{transition:all .15s ease;cursor:pointer}
+.gmb-route-buttons button:hover{background:var(--primary)!important;color:white!important;border-color:var(--primary)!important;transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.gmb-route-buttons button:active{transform:translateY(0);box-shadow:none}
+</style>
 
 
 
@@ -509,8 +516,8 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="7" cy="17" r="1.5" fill="currentColor"/><circle cx="17" cy="17" r="1.5" fill="currentColor"/></svg>
         </div>
         <div>
-          <div class="section-hdr-title-zh">巴士及小巴到站時間</div>
-          <div class="section-hdr-title-en">Bus & MiniBus ETA · KMB / CTB / GMB</div>
+          <div class="section-hdr-title-zh">巴士及綠色小巴到站時間</div>
+          <div class="section-hdr-title-en">Bus & Green MiniBus ETA · KMB / CTB / GMB</div>
         </div>
       </div>
 
@@ -564,7 +571,7 @@
         </div>
 
         <!-- Quick route buttons -->
-        <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)">
+        <div class="bus-quick-routes" style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)">
           <span style="font-size:var(--text-xs);color:var(--text-faint);align-self:center">常用巴士路線：</span>
           <button onclick="document.getElementById('bus-search-input').value='44';BusSearch.search()"
             style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:4px 12px;font-size:var(--text-xs);cursor:pointer;color:var(--text)">44</button>

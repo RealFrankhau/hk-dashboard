@@ -222,6 +222,20 @@ function getIntensityColor(intensity) {
   return map[intensity] || '#94a3b8';
 }
 
+/* ── Intensity Chinese name mapping ────────────────────────── */
+function getIntensityChinese(intensity) {
+  const map = {
+    'Super Typhoon':        '超強颱風',
+    'Severe Typhoon':       '強颱風',
+    'Typhoon':              '颱風',
+    'Severe Tropical Storm': '強烈熱帶風暴',
+    'Tropical Storm':       '熱帶風暴',
+    'Tropical Depression':  '熱帶低氣壓',
+    'Low Pressure Area':    '低壓區',
+  };
+  return map[intensity] || intensity;
+}
+
 /* ── Format time for display ───────────────────────────────── */
 function formatTcTime(isoStr) {
   if (!isoStr) return '';
@@ -417,7 +431,25 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }).addTo(map).bindPopup('可能移動範圍<br>Potential Track Area');
   }
 
-  // ── 2. Past track — black solid line ──
+  // ── 2. HK Concentric Rings (200/400/600/800 km) ──
+  const hkCenter = [HK_COORDS.lat, HK_COORDS.lon];
+  const rings = [
+    { radius: 800000, color: '#2563eb', label: '800km' },  // tag-blue
+    { radius: 600000, color: '#16a34a', label: '600km' },  // tag-green
+    { radius: 400000, color: '#b45309', label: '400km' },  // tag-yellow
+    { radius: 200000, color: '#dc2626', label: '200km' },  // tag-red
+  ];
+  rings.forEach(r => {
+    L.circle(hkCenter, {
+      radius: r.radius,
+      color: r.color,
+      weight: 1,
+      fill: false,
+      opacity: 0.6,
+    }).addTo(map);
+  });
+
+  // ── 3. Past track — black solid line ──
   const pastLatLngs = [];
   data.pastPositions.forEach(p => pastLatLngs.push([p.lat, p.lon]));
   if (data.currentPos) pastLatLngs.push([data.currentPos.lat, data.currentPos.lon]);
@@ -430,7 +462,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }).addTo(map);
   }
 
-  // ── 3. Past position markers (dark dots) ──
+  // ── 4. Past position markers (dark dots) ──
   data.pastPositions.forEach(p => {
     const timeStr = formatTcTime(p.time);
     const popup = `
@@ -438,7 +470,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
         <strong>過去位置 Past</strong><br>
         ${timeStr}<br>
         ${p.lat.toFixed(2)}°${p.lat >= 0 ? 'N' : 'S'}, ${p.lon.toFixed(2)}°${p.lon >= 0 ? 'E' : 'W'}<br>
-        ${p.intensity}<br>
+        ${getIntensityChinese(p.intensity)}<br>
         風速 Wind: ${p.wind}
       </div>`;
     L.circleMarker([p.lat, p.lon], {
@@ -450,7 +482,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }).addTo(map).bindPopup(popup);
   });
 
-  // ── 4. Current position (larger marker with label) ──
+  // ── 5. Current position (larger marker with label) ──
   if (data.currentPos) {
     const cp = data.currentPos;
     const timeStr = formatTcTime(cp.time);
@@ -460,7 +492,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
         <strong>現時位置 Current</strong><br>
         ${timeStr}<br>
         ${cp.lat.toFixed(2)}°${cp.lat >= 0 ? 'N' : 'S'}, ${cp.lon.toFixed(2)}°${cp.lon >= 0 ? 'E' : 'W'}<br>
-        ${cp.intensity}<br>
+        ${getIntensityChinese(cp.intensity)}<br>
         風速 Wind: ${cp.wind}<br>
         ${cp.pressure ? '氣壓 Pressure: ' + cp.pressure + '<br>' : ''}
         ${cp.movement ? '移動方向 Movement: ' + cp.movement + '<br>' : ''}
@@ -480,7 +512,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
       className: 'tc-current-label',
       html: `<div style="
         background:var(--primary,#ef4444);
-        color:white;
+        color:black;
         padding:2px 8px;
         border-radius:4px;
         font-size:11px;
@@ -494,7 +526,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     L.marker([cp.lat, cp.lon], { icon }).addTo(map);
   }
 
-  // ── 5. Forecast track — segmented by intensity color ──
+  // ── 6. Forecast track — segmented by intensity color ──
   const forecastSegments = [];
   if (data.currentPos) {
     forecastSegments.push({ lat: data.currentPos.lat, lon: data.currentPos.lon, intensity: data.currentPos.intensity });
@@ -518,7 +550,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }
   }
 
-  // ── 6. Forecast position markers (colored by intensity with time labels) ──
+  // ── 7. Forecast position markers (colored by intensity with time labels) ──
   // Key forecast points: 12h (index ~21), 24h, 36h (index ~45), 48h, 72h (index ~69)
   const keyForecastIndices = [21, 45, 69];
   data.forecastPositions.forEach(p => {
@@ -532,7 +564,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
         <strong>預測 Forecast (${p.index}h)</strong><br>
         ${timeStr}<br>
         ${p.lat.toFixed(2)}°${p.lat >= 0 ? 'N' : 'S'}, ${p.lon.toFixed(2)}°${p.lon >= 0 ? 'E' : 'W'}<br>
-        ${p.intensity || '--'}<br>
+        ${getIntensityChinese(p.intensity) || '--'}<br>
         ${p.wind ? '風速 Wind: ' + p.wind : ''}
       </div>`;
 
@@ -562,7 +594,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }
   });
 
-  // ── 7. Legend ──
+  // ── 8. Legend ──
   const legend = L.control({ position: 'bottomright' });
   legend.onAdd = function() {
     const div = L.DomUtil.create('div', 'tc-legend');
@@ -581,7 +613,12 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
       <div><span style="display:inline-block;width:12px;height:3px;background:#222;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
       <div><span style="display:inline-block;width:12px;height:3px;background:#ef4444;margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track</div>
       <div><span style="display:inline-block;width:8px;height:8px;background:#444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
-      <div style="margin-top:4px;font-weight:600">強度 Intensity:</div>
+      <div style="margin-top:4px;font-weight:600">與香港距離 Distance from HK</div>
+      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #dc2626;margin-right:6px;vertical-align:middle"></span> 200 公里範圍</div>
+      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #b45309;margin-right:6px;vertical-align:middle"></span> 400 公里範圍</div>
+      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #16a34a;margin-right:6px;vertical-align:middle"></span> 600 公里範圍</div>
+      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #2563eb;margin-right:6px;vertical-align:middle"></span> 800 公里範圍</div>
+      <div style="margin-top:4px;font-weight:600">強度 Intensity</div>
       <div><span style="display:inline-block;width:8px;height:8px;background:#333;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶低氣壓</div>
       <div><span style="display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶風暴</div>
       <div><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強烈熱帶風暴</div>
@@ -624,14 +661,14 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
     const distText = formatDistanceBearing(f.lat, f.lon);
     return `
       <tr>
-        <td data-label="時段">&nbsp;&nbsp;+${h}h</td>
-        <td data-label="緯度">&nbsp;&nbsp;${f.lat.toFixed(1)}°${f.lat >= 0 ? 'N' : 'S'}</td>
-        <td data-label="經度">&nbsp;&nbsp;${f.lon.toFixed(1)}°${f.lon >= 0 ? 'E' : 'W'}</td>
-        <td data-label="強度">&nbsp;&nbsp;${f.intensity || '--'}</td>
-        <td data-label="風速">&nbsp;&nbsp;${f.wind || '--'}</td>
-        <td data-label="氣壓">&nbsp;&nbsp;--</td>
-        <td data-label="距港距離" style="font-size:14px">&nbsp;&nbsp;${distText}</td>
-        <td data-label="時間">&nbsp;&nbsp;${f.time ? formatTcTime(f.time) : '--'}</td>
+        <td data-label="時段">&nbsp;&nbsp;&nbsp;&nbsp;+${h}h</td>
+        <td data-label="緯度">&nbsp;&nbsp;&nbsp;&nbsp;${f.lat.toFixed(1)}°${f.lat >= 0 ? 'N' : 'S'}</td>
+        <td data-label="經度">&nbsp;&nbsp;&nbsp;&nbsp;${f.lon.toFixed(1)}°${f.lon >= 0 ? 'E' : 'W'}</td>
+        <td data-label="強度">&nbsp;&nbsp;&nbsp;&nbsp;${getIntensityChinese(f.intensity) || '--'}</td>
+        <td data-label="風速">&nbsp;&nbsp;&nbsp;&nbsp;${f.wind || '--'}</td>
+        <td data-label="氣壓">&nbsp;&nbsp;&nbsp;&nbsp;--</td>
+        <td data-label="距港距離" style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;${distText}</td>
+        <td data-label="時間">&nbsp;&nbsp;&nbsp;&nbsp;${f.time ? formatTcTime(f.time) : '--'}</td>
       </tr>`;
   }).filter(Boolean).join('');
 
@@ -666,7 +703,7 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
           <td data-label="時段" style="padding:var(--sp-2) var(--sp-3);font-weight:700;color:var(--primary)">現時</td>
           <td data-label="緯度" style="padding:var(--sp-2) var(--sp-3)">${cp.lat.toFixed(1)}°${cp.lat >= 0 ? 'N' : 'S'}</td>
           <td data-label="經度" style="padding:var(--sp-2) var(--sp-3)">${cp.lon.toFixed(1)}°${cp.lon >= 0 ? 'E' : 'W'}</td>
-          <td data-label="強度" style="padding:var(--sp-2) var(--sp-3)">${cp.intensity || '--'}</td>
+          <td data-label="強度" style="padding:var(--sp-2) var(--sp-3)">${getIntensityChinese(cp.intensity) || '--'}</td>
           <td data-label="風速" style="padding:var(--sp-2) var(--sp-3)">${cp.wind || '--'}</td>
           <td data-label="氣壓" style="padding:var(--sp-2) var(--sp-3)">${cp.pressure || '--'}</td>
           <td data-label="距港距離" style="padding:var(--sp-2) var(--sp-3);font-size:14px">${currentDistText}</td>
