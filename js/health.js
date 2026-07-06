@@ -9,6 +9,7 @@ const AED_URL = 'https://www.ha.org.hk/opendata/aed/aedwtdata2-tc.json';
 
 let aedSortAsc = true;
 let aedMiniSortAsc = false;
+let aedMiniType = 't45p50'; // 't45p50' or 't3p50' — default to T45
 
 /* ── Hospital region map ─────────────────────────────────────── */
 const HOSP_REGION = {
@@ -128,15 +129,33 @@ async function fetchAED() {
         if (container) healthMiniEl.appendChild(container);
       }
 
+      // Wire up the dropdown selector (only once)
+      const sel = document.getElementById('aed-mini-type-select');
+      if (sel && !sel.dataset.wired) {
+        sel.dataset.wired = '1';
+        sel.value = aedMiniType;
+        sel.onchange = (e) => {
+          aedMiniType = e.target.value;
+          // Update the card title to reflect the selected type
+          const titleEl = healthMiniEl.closest('.card').querySelector('.card-title');
+          if (titleEl) {
+            titleEl.textContent = aedMiniType === 't3p50'
+              ? '全港公立醫院急症室等候時間 - T3 甲類急症（緊急）已排序'
+              : '全港公立醫院急症室等候時間 - T45 乙丙類急症（半緊急/非緊急）已排序';
+          }
+          fetchAED();
+        };
+      }
+
       const sortedList = [...list].sort((a, b) => {
-        const timeA = parseWaitMins(a.t45p50) || 0;
-        const timeB = parseWaitMins(b.t45p50) || 0;
+        const timeA = parseWaitMins(a[aedMiniType]) || 0;
+        const timeB = parseWaitMins(b[aedMiniType]) || 0;
         return aedMiniSortAsc ? timeA - timeB : timeB - timeA;
       });
       
       const listCont = document.getElementById('aed-mini-list-container');
       if (listCont) {
-        listCont.innerHTML = sortedList.slice(0, 18).map(h => renderAedRow(h)).join('');
+        listCont.innerHTML = sortedList.slice(0, 18).map(h => renderAedRow(h, aedMiniType)).join('');
       }
     }
 
@@ -203,12 +222,13 @@ async function fetchAED() {
  }
 
 /* ── Row renderer (home mini) ────────────────────────────────── */
-function renderAedRow(h) {
-  const t45 = h.t45p50 || '--';
-  const cls = aedWaitClass(t45);
+function renderAedRow(h, type) {
+  const field = type || 't45p50';
+  const val = h[field] || '--';
+  const cls = aedWaitClass(val);
   return '<div class="row-item">' +
     '<span class="row-name" style="font-size:var(--text-xs)">' + h.hospName + '</span>' +
-    '<span class="tag ' + cls + '" style="font-size:10px">' + (t45 !== '--' ? t45 : '—') + '</span>' +
+    '<span class="tag ' + cls + '" style="font-size:10px">' + (val !== '--' ? val : '—') + '</span>' +
     '</div>';
 }
 
