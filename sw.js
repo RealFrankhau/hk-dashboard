@@ -16,6 +16,7 @@ const STATIC_URLS = [
   '/js/environment.js',
   '/js/cctv.js',
   '/js/bus.js',
+  '/js/flights.js',
   '/js/tides.js',
   '/js/parking.js',
   '/js/ferry.js',

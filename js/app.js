@@ -95,6 +95,7 @@ async function loadAllData() {
     safeRun('Health',       () => Health.refresh()),
     safeRun('Environment',  () => Environment.refresh()),
     safeRun('Typhoon',      () => Typhoon.refresh()),
+    safeRun('Flights',      () => Flights.refresh()),
   ]);
 }
 
@@ -130,6 +131,11 @@ function startAutoRefresh() {
   setInterval(async () => {
     await safeRun('Typhoon', () => Typhoon.refresh());
   }, 600000);
+
+  // Flights every 5 minutes
+  setInterval(async () => {
+    await safeRun('Flights', () => Flights.refresh());
+  }, 300000);
 }
 
 /* ── Safe run wrapper ────────────────────────────────────────── */
@@ -168,6 +174,9 @@ window.showPage = function(name) {
         window._holidaysLoaded = true;
         safeRun('Holidays', () => Holidays.refresh());
       }
+      break;
+    case 'airport':
+      safeRun('Flights', () => Flights.refresh());
       break;
   }
 };
