@@ -122,20 +122,20 @@ function startAutoRefresh() {
     await safeRun('Transport', () => Transport.refresh());
   }, 30000);
 
-  // Bus presets every 45 seconds
+  // Bus presets every 30 seconds
   setInterval(async () => {
     await safeRun('Bus', () => Bus.refresh());
-  }, 45000);
+  }, 30000);
 
-  // Typhoon every 10 minutes
+  // Typhoon every 1 hour
   setInterval(async () => {
     await safeRun('Typhoon', () => Typhoon.refresh());
-  }, 600000);
+  }, 3600000);
 
-  // Flights every 5 minutes
+  // Flights every 1 minutes
   setInterval(async () => {
     await safeRun('Flights', () => Flights.refresh());
-  }, 300000);
+  }, 60000);
 }
 
 /* ── Safe run wrapper ────────────────────────────────────────── */

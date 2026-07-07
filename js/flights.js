@@ -137,65 +137,65 @@ const AIRLINE_NAMES = {
   'ZZZ': '其他 Other',
 };
 
-/* ── IATA city/airport code → Chinese city names ──────────── */
+/* ── IATA city/airport code → Chinese and English city names ──────────── */
 const CITY_NAMES = {
   // Hong Kong
-  'HKG': '香港',
+  'HKG': { zh: '香港', en: 'Hong Kong' },
   // Mainland China
-  'PEK': '北京', 'PKX': '北京大興', 'SHA': '上海虹橋', 'PVG': '上海浦東',
-  'CAN': '廣州', 'SZX': '深圳', 'CTU': '成都', 'CKG': '重慶',
-  'XIY': '西安', 'HGH': '杭州', 'HFE': '合肥', 'NKG': '南京',
-  'WUH': '武漢', 'CSX': '長沙', 'NNG': '南寧', 'KMG': '昆明',
-  'HAK': '海口', 'SYX': '三亞', 'XMN': '廈門', 'FOC': '福州',
-  'DLC': '大連', 'SHE': '瀋陽', 'TSN': '天津', 'TNA': '濟南',
-  'QNG': '泉州', 'CGO': '鄭州', 'LJG': '麗江', 'LUM': '芒市',
-  'ZHA': '湛江', 'HYN': '台州', 'WNZ': '溫州', 'JHG': '西雙版納',
-  'DLU': '大理', 'BHY': '北海', 'NGB': '寧波', 'YNT': '煙台',
-  'TPE': '台北', 'TSA': '台北松山', 'KHH': '高雄', 'TNN': '台南',
-  'MFM': '澳門',
+  'PEK': { zh: '北京', en: 'Beijing' }, 'PKX': { zh: '北京大興', en: 'Beijing Daxing' }, 'SHA': { zh: '上海虹橋', en: 'Shanghai Hongqiao' }, 'PVG': { zh: '上海浦東', en: 'Shanghai Pudong' },
+  'CAN': { zh: '廣州', en: 'Guangzhou' }, 'SZX': { zh: '深圳', en: 'Shenzhen' }, 'CTU': { zh: '成都', en: 'Chengdu' }, 'CKG': { zh: '重慶', en: 'Chongqing' },
+  'XIY': { zh: '西安', en: 'Xian' }, 'HGH': { zh: '杭州', en: 'Hangzhou' }, 'HFE': { zh: '合肥', en: 'Hefei' }, 'NKG': { zh: '南京', en: 'Nanjing' },
+  'WUH': { zh: '武漢', en: 'Wuhan' }, 'CSX': { zh: '長沙', en: 'Changsha' }, 'NNG': { zh: '南寧', en: 'Nanning' }, 'KMG': { zh: '昆明', en: 'Kunming' },
+  'HAK': { zh: '海口', en: 'Haikou' }, 'SYX': { zh: '三亞', en: 'Sanya' }, 'XMN': { zh: '廈門', en: 'Xiamen' }, 'FOC': { zh: '福州', en: 'Fuzhou' },
+  'DLC': { zh: '大連', en: 'Dalian' }, 'SHE': { zh: '瀋陽', en: 'Shenyang' }, 'TSN': { zh: '天津', en: 'Tianjin' }, 'TNA': { zh: '濟南', en: 'Jinan' },
+  'QNG': { zh: '泉州', en: 'Quanzhou' }, 'CGO': { zh: '鄭州', en: 'Zhengzhou' }, 'LJG': { zh: '麗江', en: 'Lijiang' }, 'LUM': { zh: '芒市', en: 'Mangshi' },
+  'ZHA': { zh: '湛江', en: 'Zhanjiang' }, 'HYN': { zh: '台州', en: 'Taizhou' }, 'WNZ': { zh: '溫州', en: 'Wenzhou' }, 'JHG': { zh: '西雙版納', en: 'Xishuangbanna' },
+  'DLU': { zh: '大理', en: 'Dali' }, 'BHY': { zh: '北海', en: 'Beihai' }, 'NGB': { zh: '寧波', en: 'Ningbo' }, 'YNT': { zh: '煙台', en: 'Yantai' },
+  'TPE': { zh: '台北', en: 'Taipei' }, 'TSA': { zh: '台北松山', en: 'Taipei Songshan' }, 'KHH': { zh: '高雄', en: 'Kaohsiung' }, 'TNN': { zh: '台南', en: 'Tainan' },
+  'MFM': { zh: '澳門', en: 'Macau' },
   // Japan
-  'NRT': '東京成田', 'HND': '東京羽田', 'KIX': '大阪關西', 'ITM': '大阪伊丹',
-  'NGO': '名古屋', 'FUK': '福岡', 'CTS': '札幌', 'OKA': '沖繩',
-  'KOJ': '鹿兒島', 'KIJ': '新潟', 'SDJ': '仙台', 'HKD': '函館',
-  'KMJ': '熊本', 'OIT': '大分', 'HIJ': '廣島', 'TAK': '高松',
-  'MYJ': '松山', 'TKS': '德島', 'ISG': '石垣', 'MMY': '宮古',
+  'NRT': { zh: '東京成田', en: 'Tokyo Narita' }, 'HND': { zh: '東京羽田', en: 'Tokyo Haneda' }, 'KIX': { zh: '大阪關西', en: 'Osaka Kansai' }, 'ITM': { zh: '大阪伊丹', en: 'Osaka Itami' },
+  'NGO': { zh: '名古屋', en: 'Nagoya' }, 'FUK': { zh: '福岡', en: 'Fukuoka' }, 'CTS': { zh: '札幌', en: 'Sapporo' }, 'OKA': { zh: '沖繩', en: 'Okinawa' },
+  'KOJ': { zh: '鹿兒島', en: 'Kagoshima' }, 'KIJ': { zh: '新潟', en: 'Niigata' }, 'SDJ': { zh: '仙台', en: 'Sendai' }, 'HKD': { zh: '函館', en: 'Hakodate' },
+  'KMJ': { zh: '熊本', en: 'Kumamoto' }, 'OIT': { zh: '大分', en: 'Oita' }, 'HIJ': { zh: '廣島', en: 'Hiroshima' }, 'TAK': { zh: '高松', en: 'Takamatsu' },
+  'MYJ': { zh: '松山', en: 'Matsuyama' }, 'TKS': { zh: '德島', en: 'Tokushima' }, 'ISG': { zh: '石垣', en: 'Ishigaki' }, 'MMY': { zh: '宮古', en: 'Miyako' },
   // Korea
-  'ICN': '首爾仁川', 'GMP': '首爾金浦', 'PUS': '釜山', 'CJU': '濟州',
-  'TAE': '大邱', 'KWJ': '光州',
+  'ICN': { zh: '首爾仁川', en: 'Seoul Incheon' }, 'GMP': { zh: '首爾金浦', en: 'Seoul Gimpo' }, 'PUS': { zh: '釜山', en: 'Busan' }, 'CJU': { zh: '濟州', en: 'Jeju' },
+  'TAE': { zh: '大邱', en: 'Daegu' }, 'KWJ': { zh: '光州', en: 'Gwangju' },
   // Southeast Asia
-  'SIN': '新加坡', 'KUL': '吉隆坡', 'PEN': '檳城', 'BKI': '亞庇',
-  'BKK': '曼谷', 'DMK': '曼谷廊曼', 'HKT': '布吉', 'CNX': '清邁',
-  'USM': '蘇梅', 'KBV': '甲米', 'UTP': '烏塔保',
-  'CGK': '雅加達', 'DPS': '峇里', 'SUB': '泗水', 'KNO': '棉蘭',
-  'MNL': '馬尼拉', 'CEB': '宿霧', 'DVO': '達沃', 'KLO': '長灘島',
-  'HAN': '河內', 'SGN': '胡志明市', 'DAD': '峴港', 'PQC': '富國島',
+  'SIN': { zh: '新加坡', en: 'Singapore' }, 'KUL': { zh: '吉隆坡', en: 'Kuala Lumpur' }, 'PEN': { zh: '檳城', en: 'Penang' }, 'BKI': { zh: '亞庇', en: 'Kota Kinabalu' },
+  'BKK': { zh: '曼谷', en: 'Bangkok' }, 'DMK': { zh: '曼谷廊曼', en: 'Bangkok Don Mueang' }, 'HKT': { zh: '布吉', en: 'Phuket' }, 'CNX': { zh: '清邁', en: 'Chiang Mai' },
+  'USM': { zh: '蘇梅', en: 'Koh Samui' }, 'KBV': { zh: '甲米', en: 'Krabi' }, 'UTP': { zh: '烏塔保', en: 'Udon Thani' },
+  'CGK': { zh: '雅加達', en: 'Jakarta' }, 'DPS': { zh: '峇里', en: 'Denpasar' }, 'SUB': { zh: '泗水', en: 'Surabaya' }, 'KNO': { zh: '棉蘭', en: 'Medan' },
+  'MNL': { zh: '馬尼拉', en: 'Manila' }, 'CEB': { zh: '宿霧', en: 'Cebu' }, 'DVO': { zh: '達沃', en: 'Davao' }, 'KLO': { zh: '長灘島', en: 'Coron' },
+  'HAN': { zh: '河內', en: 'Hanoi' }, 'SGN': { zh: '胡志明市', en: 'Ho Chi Minh City' }, 'DAD': { zh: '峴港', en: 'Da Nang' }, 'PQC': { zh: '富國島', en: 'Phuket' },
   // South Asia & Middle East
-  'BOM': '孟買', 'DEL': '新德里', 'BLR': '班加羅爾', 'MAA': '清奈',
-  'CMB': '可倫坡', 'DAC': '達卡', 'KTM': '加德滿都',
-  'DXB': '杜拜', 'AUH': '阿布扎比', 'DOH': '多哈', 'RUH': '利雅德',
-  'JED': '吉達', 'IKA': '德黑蘭', 'KWI': '科威特', 'BAH': '巴林',
-  'MCT': '馬斯喀特', 'TLV': '特拉維夫',
+  'BOM': { zh: '孟買', en: 'Mumbai' }, 'DEL': { zh: '新德里', en: 'New Delhi' }, 'BLR': { zh: '班加羅爾', en: 'Bengaluru' }, 'MAA': { zh: '清奈', en: 'Chennai' },
+  'CMB': { zh: '可倫坡', en: 'Colombo' }, 'DAC': { zh: '達卡', en: 'Dhaka' }, 'KTM': { zh: '加德滿都', en: 'Kathmandu' },
+  'DXB': { zh: '杜拜', en: 'Dubai' }, 'AUH': { zh: '阿布扎比', en: 'Abu Dhabi' }, 'DOH': { zh: '多哈', en: 'Doha' }, 'RUH': { zh: '利雅德', en: 'Riyadh' },
+  'JED': { zh: '吉達', en: 'Jeddah' }, 'IKA': { zh: '德黑蘭', en: 'Tehran' }, 'KWI': { zh: '科威特', en: 'Kuwait City' }, 'BAH': { zh: '巴林', en: 'Manama' },
+  'MCT': { zh: '馬斯喀特', en: 'Muscat' }, 'TLV': { zh: '特拉維夫', en: 'Tel Aviv' },
   // Europe
-  'LHR': '倫敦希斯路', 'LGW': '倫敦格域', 'MAN': '曼徹斯特',
-  'CDG': '巴黎', 'ORY': '巴黎奧利', 'NCE': '尼斯', 'MRS': '馬賽',
-  'AMS': '阿姆斯特丹', 'FRA': '法蘭克福', 'MUC': '慕尼黑', 'DUS': '杜塞爾多夫',
-  'BER': '柏林', 'HAM': '漢堡', 'ZRH': '蘇黎世', 'GVA': '日內瓦',
-  'VIE': '維也納', 'BRU': '布魯塞爾', 'CPH': '哥本哈根', 'ARN': '斯德哥爾摩',
-  'OSL': '奧斯陸', 'HEL': '赫爾辛基', 'TLL': '塔林',
-  'FCO': '羅馬', 'MXP': '米蘭', 'VCE': '威尼斯', 'NAP': '那不勒斯',
-  'MAD': '馬德里', 'BCN': '巴塞隆拿', 'LIS': '里斯本', 'OPO': '波圖',
-  'DUB': '都柏林', 'KEF': '雷克雅未克', 'IST': '伊斯坦堡',
+  'LHR': { zh: '倫敦希斯路', en: 'London Heathrow' }, 'LGW': { zh: '倫敦格域', en: 'London Gatwick' }, 'MAN': { zh: '曼徹斯特', en: 'Manchester' },
+  'CDG': { zh: '巴黎', en: 'Paris Charles de Gaulle' }, 'ORY': { zh: '巴黎奧利', en: 'Paris Orly' }, 'NCE': { zh: '尼斯', en: 'Nice' }, 'MRS': { zh: '馬賽', en: 'Marseille' },
+  'AMS': { zh: '阿姆斯特丹', en: 'Amsterdam' }, 'FRA': { zh: '法蘭克福', en: 'Frankfurt' }, 'MUC': { zh: '慕尼黑', en: 'Munich' }, 'DUS': { zh: '杜塞爾多夫', en: 'Düsseldorf' },
+  'BER': { zh: '柏林', en: 'Berlin' }, 'HAM': { zh: '漢堡', en: 'Hamburg' }, 'ZRH': { zh: '蘇黎世', en: 'Zurich' }, 'GVA': { zh: '日內瓦', en: 'Geneva' },
+  'VIE': { zh: '維也納', en: 'Vienna' }, 'BRU': { zh: '布魯塞爾', en: 'Brussels' }, 'CPH': { zh: '哥本哈根', en: 'Copenhagen' }, 'ARN': { zh: '斯德哥爾摩', en: 'Stockholm' },
+  'OSL': { zh: '奧斯陸', en: 'Oslo' }, 'HEL': { zh: '赫爾辛基', en: 'Helsinki' }, 'TLL': { zh: '塔林', en: 'Tallinn' },
+  'FCO': { zh: '羅馬', en: 'Rome Fiumicino' }, 'MXP': { zh: '米蘭', en: 'Milan Malpensa' }, 'VCE': { zh: '威尼斯', en: 'Venice' }, 'NAP': { zh: '那不勒斯', en: 'Naples' },
+  'MAD': { zh: '馬德里', en: 'Madrid' }, 'BCN': { zh: '巴塞隆拿', en: 'Barcelona' }, 'LIS': { zh: '里斯本', en: 'Lisbon' }, 'OPO': { zh: '波圖', en: 'Porto' },
+  'DUB': { zh: '都柏林', en: 'Dublin' }, 'KEF': { zh: '雷克雅未克', en: 'Reykjavik' }, 'IST': { zh: '伊斯坦堡', en: 'Istanbul' },
   // Africa
-  'JNB': '約翰內斯堡', 'CPT': '開普敦', 'NBO': '內羅畢', 'LOS': '拉各斯',
-  'CAI': '開羅', 'CMN': '卡薩布蘭卡', 'ADD': '阿迪斯阿貝巴',
+  'JNB': { zh: '約翰內斯堡', en: 'Johannesburg' }, 'CPT': { zh: '開普敦', en: 'Cape Town' }, 'NBO': { zh: '內羅畢', en: 'Nairobi' }, 'LOS': { zh: '拉各斯', en: 'Lagos' },
+  'CAI': { zh: '開羅', en: 'Cairo' }, 'CMN': { zh: '卡薩布蘭卡', en: 'Casablanca' }, 'ADD': { zh: '阿迪斯阿貝巴', en: 'Addis Ababa' },
   // Americas
-  'LAX': '洛杉磯', 'JFK': '紐約甘迺迪', 'EWR': '紐華克', 'SFO': '三藩市',
-  'ORD': '芝加哥', 'SEA': '西雅圖', 'YVR': '溫哥華', 'YYZ': '多倫多',
-  'HNL': '檀香山', 'MEX': '墨西哥城', 'PTY': '巴拿馬城',
+  'LAX': { zh: '洛杉磯', en: 'Los Angeles' }, 'JFK': { zh: '紐約甘迺迪', en: 'New York JFK' }, 'EWR': { zh: '紐華克', en: 'Newark' }, 'SFO': { zh: '三藩市', en: 'San Francisco' },
+  'ORD': { zh: '芝加哥', en: 'Chicago' }, 'SEA': { zh: '西雅圖', en: 'Seattle' }, 'YVR': { zh: '溫哥華', en: 'Vancouver' }, 'YYZ': { zh: '多倫多', en: 'Toronto' },
+  'HNL': { zh: '檀香山', en: 'Honolulu' }, 'MEX': { zh: '墨西哥城', en: 'Mexico City' }, 'PTY': { zh: '巴拿馬城', en: 'Panama City' },
   // Australia / NZ / Pacific
-  'SYD': '悉尼', 'MEL': '墨爾本', 'BNE': '布里斯班', 'PER': '珀斯',
-  'ADL': '阿德萊德', 'CNS': '開恩茲',
-  'AKL': '奧克蘭', 'WLG': '威靈頓', 'CHC': '基督城',
+  'SYD': { zh: '悉尼', en: 'Sydney' }, 'MEL': { zh: '墨爾本', en: 'Melbourne' }, 'BNE': { zh: '布里斯班', en: 'Brisbane' }, 'PER': { zh: '珀斯', en: 'Perth' },
+  'ADL': { zh: '阿德萊德', en: 'Adelaide' }, 'CNS': { zh: '開恩茲', en: 'Cairns' },
+  'AKL': { zh: '奧克蘭', en: 'Auckland' }, 'WLG': { zh: '威靈頓', en: 'Wellington' }, 'CHC': { zh: '基督城', en: 'Christchurch' },
 };
 
 /* ── Cached data + render state ───────────────────────────── */
@@ -213,7 +213,36 @@ function airlineName(code) {
 
 function cityName(code) {
   if (!code) return '—';
-  return CITY_NAMES[code] || code;
+  const entry = CITY_NAMES[code];
+  if (typeof entry === 'object' && entry !== null) {
+    return entry.zh || entry.en || code;
+  }
+  return entry || code;
+}
+
+function cityNameEn(code) {
+  if (!code) return '—';
+  const entry = CITY_NAMES[code];
+  if (typeof entry === 'object' && entry !== null) {
+    return entry.en || entry.zh || code;
+  }
+  return entry || code;
+}
+
+function airlineNameZh(code) {
+  if (!code) return '—';
+  const fullName = AIRLINE_NAMES[code] || code;
+  // Extract Chinese part (everything before the first space)
+  const match = fullName.match(/^([^\s]+)/);
+  return match ? match[1] : fullName;
+}
+
+function airlineNameEn(code) {
+  if (!code) return '—';
+  const fullName = AIRLINE_NAMES[code] || code;
+  // Extract English part (everything after the first space)
+  const match = fullName.match(/^\S+\s+(.+)$/);
+  return match ? match[1] : fullName;
 }
 
 function getTodayDateStr() {
@@ -261,7 +290,7 @@ function statusToTag(status) {
 
 function formatFlightNumbers(flights) {
   if (!flights || !Array.isArray(flights) || flights.length === 0) return '—';
-  return flights.map(f => f.no).filter(Boolean).join(' / ');
+  return flights.map(f => f.no).filter(Boolean).join('<br>');
 }
 
 function formatCodeshareTooltip(flights) {
@@ -290,7 +319,10 @@ async function fetchFlights(isArrival) {
     const data = await res.json();
     const list = sortByTime(pickTodayList(data));
     state.raw = list;
-    state.filtered = list;
+    // Filter to show only flights from current time onwards
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    state.filtered = list.filter(f => timeToMinutes(f.time) >= currentMinutes);
     state.page = 0;
     state.lastUpdated = new Date();
   } catch (err) {
@@ -347,11 +379,12 @@ function renderHead(isArrival) {
   return `
     <div class="card-head">
       <div>
-        <div class="card-title">${titleZh} · <span style="font-weight:500;color:var(--text-muted);font-size:var(--text-sm)">${titleEn}</span></div>
+        <div class="card-title">${titleZh}</div>
+        <div class="card-title-en">${titleEn}</div>
         <div class="card-sub">${updatedStr} · 共 ${total} 班次 Total ${total} flights</div>
       </div>
       <div style="display:flex;align-items:center;gap:var(--sp-2)">
-        <span class="card-badge badge-live">● 5分鐘</span>
+        <span class="card-badge badge-live">● 實時</span>
         <span class="card-badge badge-source">HKIA</span>
       </div>
     </div>
@@ -379,6 +412,7 @@ function renderDepartureRow(f) {
   const flight = f.flight && f.flight[0] ? f.flight[0] : null;
   const tooltip = formatCodeshareTooltip(f.flight);
   const destCities = (f.destination || []).map(cityName).join(' / ') || '—';
+  const destCitiesEn = (f.destination || []).map(cityNameEn).join(' / ') || '—';
   const destCodes = (f.destination || []).join(', ');
 
   return `
@@ -386,14 +420,18 @@ function renderDepartureRow(f) {
       <td class="ft-time"><span class="ft-time-val">${f.time || '—'}</span></td>
       <td class="ft-dest">
         <div class="ft-dest-name">${destCities}</div>
+        <div class="ft-dest-name-en">${destCitiesEn}</div>
         <div class="ft-dest-code">${destCodes}</div>
       </td>
-      <td class="ft-airline">${airlineName(flight ? flight.airline : null)}</td>
+      <td class="ft-airline">
+        <div class="ft-airline-zh">${airlineNameZh(flight ? flight.airline : null)}</div>
+        <div class="ft-airline-en">${airlineNameEn(flight ? flight.airline : null)}</div>
+      </td>
       <td class="ft-flight" ${tooltip ? `title="代碼共享：${tooltip}"` : ''}>
         ${formatFlightNumbers(f.flight)}
       </td>
       <td class="ft-center">${f.terminal || '—'}</td>
-      <td class="ft-center">${f.aisle ? f.aisle + '行' : '—'}</td>
+      <td class="ft-center">${f.aisle ? f.aisle + '&nbsp;行' : '—'}</td>
       <td class="ft-center">${f.gate || '—'}</td>
       <td class="ft-status"><span class="tag ${status.tag}">${status.label}</span></td>
     </tr>
@@ -407,17 +445,22 @@ function renderArrivalRow(f) {
   const flight = f.flight && f.flight[0] ? f.flight[0] : null;
   const tooltip = formatCodeshareTooltip(f.flight);
   const originCities = (f.origin || []).map(cityName).join(' / ') || '—';
+  const originCitiesEn = (f.origin || []).map(cityNameEn).join(' / ') || '—';
   const originCodes = (f.origin || []).join(', ');
 
   return `
     <tr>
       <td class="ft-time"><span class="ft-time-val">${f.time || '—'}</span></td>
-      <td class="ft-airline">${airlineName(flight ? flight.airline : null)}</td>
+      <td class="ft-airline">
+        <div class="ft-airline-zh">${airlineNameZh(flight ? flight.airline : null)}</div>
+        <div class="ft-airline-en">${airlineNameEn(flight ? flight.airline : null)}</div>
+      </td>
       <td class="ft-flight" ${tooltip ? `title="代碼共享：${tooltip}"` : ''}>
         ${formatFlightNumbers(f.flight)}
       </td>
       <td class="ft-dest">
         <div class="ft-dest-name">${originCities}</div>
+        <div class="ft-dest-name-en">${originCitiesEn}</div>
         <div class="ft-dest-code">${originCodes}</div>
       </td>
       <td class="ft-center">${f.hall || '—'}</td>
@@ -465,7 +508,7 @@ function renderDepartures() {
             <th>航空公司 Airline</th>
             <th>航班 Flight</th>
             <th>客運大樓 Terminal</th>
-            <th>登機區 Aisle</th>
+            <th>登機行段 Check-in Aisle</th>
             <th>登機閘口 Gate</th>
             <th>狀態 Status</th>
           </tr>
@@ -603,6 +646,11 @@ function goPage(isArrival, page) {
       color: var(--text);
       line-height: 1.2;
     }
+    .ft-dest-name-en {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
     .ft-dest-code {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
@@ -614,6 +662,16 @@ function goPage(isArrival, page) {
       font-size: var(--text-sm);
       color: var(--text);
       max-width: 200px;
+    }
+    .ft-airline-zh {
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .ft-airline-en {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      line-height: 1.2;
     }
     .ft-flight {
       font-family: var(--font-mono);

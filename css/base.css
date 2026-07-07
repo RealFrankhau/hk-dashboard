@@ -119,6 +119,7 @@ p, li { text-wrap: pretty; }
   gap: var(--sp-2); margin-bottom: var(--sp-4);
 }
 .card-title { font-size: var(--text-base); font-weight: 700; color: var(--text); }
+.card-title-en { font-size: var(--text-sm); font-weight: 500; color: var(--text-muted); margin-top: 2px; }
 
 /* Countdown card — center content both axes */
 #hol-countdown {
