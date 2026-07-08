@@ -3,15 +3,26 @@
    Hong Kong International Airport (HKIA)
    香港國際機場實時航班資訊
    ============================================================
-   Data source: HKIA REST API proxied via /hkia-flights
+   Data source: HKIA REST API (proxied via cors-anywhere to bypass CORS)
    Endpoint:    /flightinfo-rest/rest/flights?span=1&date=...&lang=...&cargo=...&arrival=...
    Refresh:     every 5 minutes
+   
+   CORS Proxy:
+   Set CORS_PROXY_BASE below to your deployed cors-anywhere URL,
+   e.g. https://hk-cors-proxy.onrender.com
    ============================================================ */
 
 'use strict';
 
 const FLIGHTS_PER_PAGE = 15;
-const HKIA_PROXY = '/hkia-flights';
+
+/* ── CORS Proxy ────────────────────────────────────────────────
+   🔧 改呢度：Deploy 咗 cors-anywhere 上 Render 之後，
+      將下面條 URL 改做你嘅 Render service URL
+   例: https://hk-cors-proxy.onrender.com
+   ──────────────────────────────────────────────────────────── */
+const CORS_PROXY_BASE = '__CORS_PROXY_URL__'; // ← 改做你嘅 Render URL
+const HKIA_API_BASE   = 'https://www.hongkongairport.com/flightinfo-rest/rest/flights';
 
 /* ── Airline name mapping (IATA → display name) ────────────── */
 const AIRLINE_NAMES = {
@@ -152,7 +163,7 @@ const CITY_NAMES = {
   'ZHA': { zh: '湛江', en: 'Zhanjiang' }, 'HYN': { zh: '台州', en: 'Taizhou' }, 'WNZ': { zh: '溫州', en: 'Wenzhou' }, 'JHG': { zh: '西雙版納', en: 'Xishuangbanna' },
   'DLU': { zh: '大理', en: 'Dali' }, 'BHY': { zh: '北海', en: 'Beihai' }, 'NGB': { zh: '寧波', en: 'Ningbo' }, 'YNT': { zh: '煙台', en: 'Yantai' },
   'TPE': { zh: '台北', en: 'Taipei' }, 'TSA': { zh: '台北松山', en: 'Taipei Songshan' }, 'KHH': { zh: '高雄', en: 'Kaohsiung' }, 'TNN': { zh: '台南', en: 'Tainan' },
-  'MFM': { zh: '澳門', en: 'Macau' },
+  'MFM': { zh: '澳門', en: 'Macau' }, 'TFU': { zh: '成都天府', en: 'Chengdu Tianfu' },
   // Japan
   'NRT': { zh: '東京成田', en: 'Tokyo Narita' }, 'HND': { zh: '東京羽田', en: 'Tokyo Haneda' }, 'KIX': { zh: '大阪關西', en: 'Osaka Kansai' }, 'ITM': { zh: '大阪伊丹', en: 'Osaka Itami' },
   'NGO': { zh: '名古屋', en: 'Nagoya' }, 'FUK': { zh: '福岡', en: 'Fukuoka' }, 'CTS': { zh: '札幌', en: 'Sapporo' }, 'OKA': { zh: '沖繩', en: 'Okinawa' },
@@ -313,7 +324,7 @@ async function fetchFlights(isArrival) {
       cargo: 'false',
       arrival: String(isArrival),
     });
-    const url = `${HKIA_PROXY}?${params.toString()}`;
+    const url = `${CORS_PROXY_BASE}/${HKIA_API_BASE}?${params.toString()}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -379,8 +390,7 @@ function renderHead(isArrival) {
   return `
     <div class="card-head">
       <div>
-        <div class="card-title">${titleZh}</div>
-        <div class="card-title-en">${titleEn}</div>
+        <div class="card-title">${titleZh} ${titleEn}</div>
         <div class="card-sub">${updatedStr} · 共 ${total} 班次 Total ${total} flights</div>
       </div>
       <div style="display:flex;align-items:center;gap:var(--sp-2)">

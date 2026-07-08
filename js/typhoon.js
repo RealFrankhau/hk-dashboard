@@ -11,6 +11,13 @@ const HK_COORDS = { lat: 22.3193, lon: 114.1694 };
 const CACHE_PREFIX = 'hk_tc_';
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
+/* ── CORS Proxy ────────────────────────────────────────────────
+   🔧 改呢度：Deploy 咗 cors-anywhere 上 Render 之後，
+      將下面條 URL 改做你嘅 Render service URL
+   例: https://hk-cors-proxy.onrender.com
+   ──────────────────────────────────────────────────────────── */
+const CORS_PROXY_BASE = '__CORS_PROXY_URL__'; // ← 改做你嘅 Render URL
+
 /* ── Fetch helper with caching ──────────────────────────────── */
 function cacheGet(key) {
   try {
@@ -43,20 +50,27 @@ function toHkoProxyUrl(url) {
 }
 
 async function fetchWithFallback(url) {
-  // 1. Try local dev server proxy
+  // 1. Try cors-anywhere proxy (primary)
+  try {
+    const proxyUrl = `${CORS_PROXY_BASE}/${url}`;
+    const res = await fetch(proxyUrl, { mode: 'cors' });
+    if (res.ok) return res;
+  } catch (_) { /* fall through */ }
+
+  // 2. Try local dev server proxy
   try {
     const proxyUrl = toHkoProxyUrl(url);
     const res = await fetch(proxyUrl, { mode: 'cors' });
     if (res.ok) return res;
   } catch (_) { /* fall through */ }
 
-  // 2. Try direct fetch
+  // 3. Try direct fetch
   try {
     const res = await fetch(url, { mode: 'cors' });
     if (res.ok) return res;
   } catch (_) { /* fall through */ }
 
-  // 3. Try external CORS proxies
+  // 4. Try external CORS proxies
   for (const proxy of CORS_PROXIES) {
     try {
       const res = await fetch(proxy + encodeURIComponent(url));

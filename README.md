@@ -54,6 +54,10 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 - **24 節氣** — 當前節氣及下一個節氣倒計時
 - **年份切換** — 2024/2025/2026 完整假期列表
 
+### ✈️ 航班 Flights
+- **航班資訊** — 離港及抵航班資訊
+
+
 
 ---
 

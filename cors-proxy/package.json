@@ -1,0 +1,12 @@
+{
+  "name": "hk-dashboard-cors-proxy",
+  "version": "1.0.0",
+  "description": "CORS Anywhere proxy for HK City Dashboard (deploy to Render)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors-anywhere": "^0.4.4"
+  }
+}
