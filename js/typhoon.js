@@ -11,6 +11,9 @@ const HK_COORDS = { lat: 22.3193, lon: 114.1694 };
 const CACHE_PREFIX = 'hk_tc_';
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
+/* ── CORS Proxy (Cloudflare Worker) ────────────────────────── */
+const CORS_PROXY_BASE = 'https://hkdashboard.frankhau.workers.dev/?url=';
+
 /* ── Fetch helper with caching ──────────────────────────────── */
 function cacheGet(key) {
   try {
@@ -43,14 +46,21 @@ function toHkoProxyUrl(url) {
 }
 
 async function fetchWithFallback(url) {
-  // 1. Try local dev server proxy
+  // 1. Try Cloudflare Worker proxy (primary)
+  try {
+    const proxyUrl = `${CORS_PROXY_BASE}${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl, { mode: 'cors' });
+    if (res.ok) return res;
+  } catch (_) { /* fall through */ }
+
+  // 2. Try local dev server proxy
   try {
     const proxyUrl = toHkoProxyUrl(url);
     const res = await fetch(proxyUrl, { mode: 'cors' });
     if (res.ok) return res;
   } catch (_) { /* fall through */ }
 
-  // 2. Try direct fetch
+  // 3. Try direct fetch
   try {
     const res = await fetch(url, { mode: 'cors' });
     if (res.ok) return res;

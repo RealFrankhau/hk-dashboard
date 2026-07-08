@@ -3,7 +3,7 @@
    Hong Kong International Airport (HKIA)
    香港國際機場實時航班資訊
    ============================================================
-   Data source: HKIA REST API (proxied via /hkia-flights to bypass CORS)
+   Data source: HKIA REST API (proxied via Cloudflare Worker to bypass CORS)
    Endpoint:    /flightinfo-rest/rest/flights?span=1&date=...&lang=...&cargo=...&arrival=...
    Refresh:     every 5 minutes
    ============================================================ */
@@ -11,7 +11,8 @@
 'use strict';
 
 const FLIGHTS_PER_PAGE = 15;
-const HKIA_PROXY = 'http://localhost:3000/hkia-flights';
+const CORS_PROXY_BASE = 'https://hkdashboard.frankhau.workers.dev/?url=';
+const HKIA_API_BASE   = 'https://www.hongkongairport.com/flightinfo-rest/rest/flights';
 
 /* ── Airline name mapping (IATA → display name) ────────────── */
 const AIRLINE_NAMES = {
@@ -313,7 +314,8 @@ async function fetchFlights(isArrival) {
       cargo: 'false',
       arrival: String(isArrival),
     });
-    const url = `${HKIA_PROXY}?${params.toString()}`;
+    const targetUrl = `${HKIA_API_BASE}?${params.toString()}`;
+    const url = `${CORS_PROXY_BASE}${encodeURIComponent(targetUrl)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
