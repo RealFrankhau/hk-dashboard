@@ -1,0 +1,10 @@
+{
+  "name": "hkdashboard",
+  "version": "1.0.0",
+  "description": "HK City Dashboard — 香港城市儀表板",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}

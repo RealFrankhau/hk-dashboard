@@ -3,26 +3,15 @@
    Hong Kong International Airport (HKIA)
    香港國際機場實時航班資訊
    ============================================================
-   Data source: HKIA REST API (proxied via cors-anywhere to bypass CORS)
+   Data source: HKIA REST API (proxied via /hkia-flights to bypass CORS)
    Endpoint:    /flightinfo-rest/rest/flights?span=1&date=...&lang=...&cargo=...&arrival=...
    Refresh:     every 5 minutes
-   
-   CORS Proxy:
-   Set CORS_PROXY_BASE below to your deployed cors-anywhere URL,
-   e.g. https://hk-cors-proxy.onrender.com
    ============================================================ */
 
 'use strict';
 
 const FLIGHTS_PER_PAGE = 15;
-
-/* ── CORS Proxy ────────────────────────────────────────────────
-   🔧 改呢度：Deploy 咗 cors-anywhere 上 Render 之後，
-      將下面條 URL 改做你嘅 Render service URL
-   例: https://hk-cors-proxy.onrender.com
-   ──────────────────────────────────────────────────────────── */
-const CORS_PROXY_BASE = '__CORS_PROXY_URL__'; // ← 改做你嘅 Render URL
-const HKIA_API_BASE   = 'https://www.hongkongairport.com/flightinfo-rest/rest/flights';
+const HKIA_PROXY = 'http://localhost:3000/hkia-flights';
 
 /* ── Airline name mapping (IATA → display name) ────────────── */
 const AIRLINE_NAMES = {
@@ -324,7 +313,7 @@ async function fetchFlights(isArrival) {
       cargo: 'false',
       arrival: String(isArrival),
     });
-    const url = `${CORS_PROXY_BASE}/${HKIA_API_BASE}?${params.toString()}`;
+    const url = `${HKIA_PROXY}?${params.toString()}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
