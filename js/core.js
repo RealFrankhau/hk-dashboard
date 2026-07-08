@@ -5,6 +5,9 @@
 
 'use strict';
 
+/* ── Shared CORS Proxy (Cloudflare Worker) ────────────────── */
+const CORS_PROXY_BASE = 'https://hkdashboard.frankhau.workers.dev/?url=';
+
 /* ── Theme (URL hash + prefers-color-scheme fallback) ─── */
 window._hkdbTheme = 'dark';
 

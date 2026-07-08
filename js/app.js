@@ -93,7 +93,7 @@ async function loadAllData() {
     safeRun('Weather',      () => Weather.refresh()),
     safeRun('Transport',    () => Transport.refresh()),
     safeRun('Health',       () => Health.refresh()),
-    safeRun('Environment',  () => Environment.refresh()),
+//    safeRun('Environment',  () => Environment.refresh()),
     safeRun('Typhoon',      () => Typhoon.refresh()),
     safeRun('Flights',      () => Flights.refresh()),
   ]);
@@ -113,7 +113,7 @@ function startAutoRefresh() {
     await Promise.allSettled([
       safeRun('Weather',     () => Weather.refresh()),
       safeRun('Health',      () => Health.refresh()),
-      safeRun('Environment', () => Environment.refresh()),
+//      safeRun('Environment', () => Environment.refresh()),
     ]);
   }, 60000);
 

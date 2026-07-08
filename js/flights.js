@@ -11,7 +11,7 @@
 'use strict';
 
 const FLIGHTS_PER_PAGE = 15;
-const CORS_PROXY_BASE = 'https://hkdashboard.frankhau.workers.dev/?url=';
+// CORS_PROXY_BASE is defined in core.js
 const HKIA_API_BASE   = 'https://www.hongkongairport.com/flightinfo-rest/rest/flights';
 
 /* ── Airline name mapping (IATA → display name) ────────────── */

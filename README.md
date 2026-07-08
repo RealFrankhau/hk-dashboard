@@ -92,6 +92,7 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 | CTB 城巴 ETA | 城巴 | `rt.data.gov.hk` |
 | GMB 專線小巴 | 運輸署 | `data.etagmb.gov.hk` |
 | 公眾假期 | 1823 | `1823.gov.hk` |
+| 航班資訊 | 香港國際機場 | `https://www.hongkongairport.com/tc/flights/departures/passenger.page` |
 
 
 
@@ -146,6 +147,7 @@ hk-dashboard/
     ├── tides.js        # 潮汐 + 地震 + 天氣展望
     ├── typhoon.js      # 颱風資訊及路徑
     ├── health.js       # 急症室等候時間
+    ├── flights.js      # 香港國際機場抵港及離港航班資訊    
     ├── holidays.js     # 公眾假期 + 節氣
     └── app.js          # 主入口（初始化 + 自動刷新）
 ```
@@ -163,8 +165,6 @@ hk-dashboard/
 | CSS Custom Properties | 深色/淺色主題切換 |
 | Google Fonts | Noto Sans TC + Inter + JetBrains Mono |
 
-**無需任何後端、無需資料庫、無需 API key。**  
-完全靜態，可部署到任何靜態主機（GitHub Pages、Replit、Vercel、Netlify 等）。
 
 ---
 

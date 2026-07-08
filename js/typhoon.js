@@ -12,7 +12,7 @@ const CACHE_PREFIX = 'hk_tc_';
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 /* ── CORS Proxy (Cloudflare Worker) ────────────────────────── */
-const CORS_PROXY_BASE = 'https://hkdashboard.frankhau.workers.dev/?url=';
+// CORS_PROXY_BASE is defined in core.js
 
 /* ── Fetch helper with caching ──────────────────────────────── */
 function cacheGet(key) {

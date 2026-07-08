@@ -3,7 +3,7 @@
    PWA: offline cache + background sync
    ============================================================ */
 
-const CACHE_NAME  = 'hk-dashboard-v10';
+const CACHE_NAME  = 'hk-dashboard-v11';
 const STATIC_URLS = [
   '/',
   '/index.html',
@@ -13,17 +13,17 @@ const STATIC_URLS = [
   '/js/weather.js',
   '/js/transport.js',
   '/js/health.js',
-  '/js/environment.js',
-  '/js/cctv.js',
+//  '/js/environment.js',
+//  '/js/cctv.js',
   '/js/bus.js',
   '/js/flights.js',
   '/js/tides.js',
-  '/js/parking.js',
-  '/js/ferry.js',
+//  '/js/parking.js',
+//  '/js/ferry.js',
   '/js/holidays.js',
-  '/js/climate.js',
-  '/js/beach.js',
-  '/js/map.js',
+  '/js/typhoon.js',
+//  '/js/beach.js',
+//  '/js/map.js',
   '/js/app.js',
   './assets/icons/cold.gif',
   './assets/icons/firer.gif',
