@@ -433,7 +433,7 @@ function renderDepartureRow(f) {
       </td>
       <td class="ft-center">${f.terminal || '—'}</td>
       <td class="ft-center">${f.aisle ? f.aisle + '&nbsp;行' : '—'}</td>
-      <td class="ft-center">${f.gate || '—'}</td>
+      <td class="ft-center">${f.gate ? `<span class="tag tag-yellow">${f.gate}</span>` : '—'}</td>
       <td class="ft-status"><span class="tag ${status.tag}">${status.label}</span></td>
     </tr>
   `;
@@ -465,7 +465,7 @@ function renderArrivalRow(f) {
         <div class="ft-dest-code">${originCodes}</div>
       </td>
       <td class="ft-center">${f.hall || '—'}</td>
-      <td class="ft-center">${f.baggage || '—'}</td>
+      <td class="ft-center">${f.baggage ? `<span class="tag tag-yellow">${f.baggage}</span>` : '—'}</td>
       <td class="ft-status"><span class="tag ${status.tag}">${status.label}</span></td>
     </tr>
   `;

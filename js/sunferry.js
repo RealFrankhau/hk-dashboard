@@ -130,7 +130,7 @@ const SunFerry = (function() {
     select.innerHTML = [
       '<option value="all">全部航線 All Routes</option>',
       ...ROUTES.map(route =>
-        `<option value="${escHtml(route.code)}">${escHtml(route.nameTc)} · ${escHtml(route.code)}</option>`
+        `<option value="${escHtml(route.code)}">${escHtml(route.nameTc)}</option>`
       ),
     ].join('');
     select.value = _selectedRoute;
@@ -189,7 +189,7 @@ const SunFerry = (function() {
           <span class="tag ${status.cls}" style="white-space:nowrap">${escHtml(status.text)}</span>
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);margin-bottom:var(--sp-3)">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3)">
           <div>
             <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;font-weight:700">Departure</div>
             <div class="row-val" style="font-size:var(--text-lg)">${escHtml(formatTime(item.depart_time))}</div>
@@ -200,14 +200,8 @@ const SunFerry = (function() {
           </div>
         </div>
 
-        <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:${remark ? 'var(--sp-3)' : '0'}">
-          <span class="tag tag-blue" style="font-family:var(--font-mono)">${escHtml(actualRouteCode)}</span>
-          <span class="tag tag-muted">船隻 ${escHtml(item.vesselcode || '未提供')}</span>
-          <span class="tag tag-muted">${escHtml(locationText(item))}</span>
-        </div>
-
         ${remark ? `
-          <div style="padding:var(--sp-3);background:var(--warning-bg);border:1px solid var(--warning);border-radius:var(--r-md);font-size:var(--text-xs);color:var(--text-muted);line-height:1.6">
+          <div style="margin-top:var(--sp-3);padding:var(--sp-3);background:var(--warning-bg);border:1px solid var(--warning);border-radius:var(--r-md);font-size:var(--text-xs);color:var(--text-muted);line-height:1.6">
             ${escHtml(remark)}
           </div>
         ` : ''}

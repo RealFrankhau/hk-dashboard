@@ -62,6 +62,7 @@ const WX_WARN_MAP = {
   'WFIREY': { text: '黃色火災危險警告', icon: './assets/icons/firey.gif' },
   'WFIRER': { text: '紅色火災危險警告', icon: './assets/icons/firer.gif' },
   'WTMW': { text: '海嘯警告', icon: './assets/icons/tsunami-warn.gif' },
+  'CANCEL': { text: '所有熱帶氣旋警告現已取消', icon: './assets/icons/cancel.gif' },
   // Legacy / fallback codes used by warnsum API
   'WTCSGNL': { text: '熱帶氣旋信號', icon: './assets/icons/tc1.gif' },
   'WRAIN': { text: '暴雨警告', icon: './assets/icons/rainr.gif' },

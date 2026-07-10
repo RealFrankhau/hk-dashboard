@@ -24,7 +24,7 @@ const MTR_STATIONS = [
   {line:'KTL',sta:'KOB',lineName:'觀塘綫',staName:'九龍灣'},
   {line:'KTL',sta:'NTK',lineName:'觀塘綫',staName:'牛頭角'},
   {line:'KTL',sta:'KWT',lineName:'觀塘綫',staName:'觀塘'},
-  {line:'KTL',sta:'LAM',lineName:'觀塘綫',staName:'藍田'},
+  {line:'KTL',sta:'LAT',lineName:'觀塘綫',staName:'藍田'},
   {line:'KTL',sta:'YAT',lineName:'觀塘綫',staName:'油塘'},
   {line:'KTL',sta:'TIK',lineName:'觀塘綫',staName:'調景嶺'},
   {line:'TWL',sta:'CEN',lineName:'荃灣綫',staName:'中環'},
@@ -175,7 +175,7 @@ DIS: '迪士尼', ETS: '尖東', EXC: '會展', FAN: '粉嶺', FOH: '炮台山',
 HAH: '坑口', HEO: '恆安', HIK: '顯徑', HKU: '香港大學', HOK: '香港', HOM: '何文田', 
 HUH: '紅磡', JOR: '佐敦', KAT: '啟德', KET: '堅尼地城', KOB: '九龍灣', KOT: '九龍塘', 
 KOW: '九龍', KSR: '錦上路', KWF: '葵芳', KWH: '葵興', KWT: '觀塘', LAK: '荔景', 
-LAM: '藍田', LCK: '荔枝角', LET: '利東', LHP: '康城', LMC: '落馬洲', LOF: '樂富', 
+LAT: '藍田', LCK: '荔枝角', LET: '利東', LHP: '康城', LMC: '落馬洲', LOF: '樂富', 
 LOP: '朗屏', LOW: '羅湖', MEF: '美孚', MKK: '旺角東', MOK: '旺角', MOS: '馬鞍山', 
 NAC: '南昌', NOP: '北角', NTK: '牛頭', OCP: '海洋公園', OLY: '奧運', POA: '寶琳', 
 PRE: '太子', QUB: '鰂魚涌', RAC: '馬場 (只在賽馬日營運)', SHM: '石門', SHS: '上水', 
@@ -380,6 +380,13 @@ async function fetchLRT(staId, targetId) {
       html += routes.slice(0, 4).map(function(r) {
         const routeNo = r.route_no || r.routeNo || '--';
         const dest = r.dest_ch || r.destCh || r.dest || '';
+        const trainLenRaw = r.train_length != null ? r.train_length : (r.trainLength != null ? r.trainLength : null);
+        const trainLen = (trainLenRaw != null && !isNaN(parseInt(trainLenRaw, 10)) && parseInt(trainLenRaw, 10) > 0)
+          ? parseInt(trainLenRaw, 10)
+          : 1;
+        // Visualize train_length as repeated tram icons (max 5 to avoid overflow)
+        const iconsToShow = Math.min(trainLen, 5);
+        const trainLenIcons = '🚈'.repeat(iconsToShow) + (trainLen > 5 ? '+' : '');
         const timeCh = r.time_ch || r.timeCh || '--';
         const minsMatch = timeCh.match(/(\d+)/);
         const mins = minsMatch ? parseInt(minsMatch[1], 10) : null;
@@ -392,7 +399,11 @@ async function fetchLRT(staId, targetId) {
         const cls = mins === null ? 'tag-blue' : mins <= 2 ? 'tag-green' : mins <= 5 ? 'tag-yellow' : 'tag-blue';
         const displayText = mins !== null ? mins + ' 分鐘' + (arrivalTime ? ' ' + arrivalTime : '') : timeCh;
         return '<div class="row-item">' +
-          '<span class="row-name"><span style="font-weight:700;color:var(--primary);margin-right:6px">' + routeNo + '</span>' + dest + '</span>' +
+          '<span class="row-name" style="display:flex;align-items:center;gap:var(--sp-3)">' +
+            '<span style="font-weight:700;color:var(--primary)">' + routeNo + '</span>' +
+            '<span>' + dest + '</span>' +
+            '<span style="font-size:var(--text-base);letter-spacing:1px" title="' + trainLen + ' 卡">' + trainLenIcons + '</span>' +
+          '</span>' +
           '<span class="tag ' + cls + '">' + displayText + '</span>' +
           '</div>';
       }).join('');

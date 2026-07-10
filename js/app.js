@@ -95,6 +95,8 @@ async function loadAllData() {
     safeRun('Health',       () => Health.refresh()),
 //    safeRun('Environment',  () => Environment.refresh()),
     safeRun('Typhoon',      () => Typhoon.refresh()),
+    safeRun('SunFerry',     () => SunFerry.refresh()),
+    safeRun('HKKF',         () => HKKF.refresh()),
     safeRun('Flights',      () => Flights.refresh()),
   ]);
 }
@@ -177,6 +179,10 @@ window.showPage = function(name) {
       break;
     case 'airport':
       safeRun('Flights', () => Flights.refresh());
+      break;
+    case 'cruise':
+      safeRun('HKKF',     () => HKKF.refresh());
+      safeRun('SunFerry', () => SunFerry.refresh());
       break;
   }
 };

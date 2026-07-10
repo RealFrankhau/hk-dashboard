@@ -207,6 +207,26 @@ function parseTcTrackXml(xmlText) {
   };
 }
 
+/* ── Fill in missing intensity values along the forecast track ── */
+/* HKO's ForecastInformation only carries <Intensity> at key hours
+   (12h, 24h, 36h, 48h, 72h). Between those anchors the field is empty,
+   so the markers fall back to grey. This helper walks the list and
+   carries the last known intensity forward; when a new key-hour value
+   appears, that one takes over for the next segment. */
+function fillForecastIntensities(forecastPositions) {
+  if (!Array.isArray(forecastPositions)) return [];
+  let lastKnown = '';
+  return forecastPositions.map(p => {
+    if (p.intensity && p.intensity.trim()) {
+      lastKnown = p.intensity.trim();
+    } else {
+      // Carry forward the previous known intensity
+      p.intensity = lastKnown;
+    }
+    return p;
+  });
+}
+
 /* ── Parse coordinate like "14.00N" or "118.10E" ──────────── */
 function parseCoord(str) {
   if (!str) return null;
@@ -378,6 +398,9 @@ async function loadTcFromList(entries, index) {
       return;
     }
 
+    // Backfill forecast intensities so every forecast point has a color
+    data.forecastPositions = fillForecastIntensities(data.forecastPositions);
+
     renderTyphoonMap(data, tc.cn, tc.en, tc.id);
     renderTyphoonInfo(data, tc.cn, tc.en, tc.id);
 
@@ -459,20 +482,20 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }).addTo(map);
   });
 
-  // ── 3. Past track — black solid line ──
+  // ── 3. Past track — light grey solid line ──
   const pastLatLngs = [];
   data.pastPositions.forEach(p => pastLatLngs.push([p.lat, p.lon]));
   if (data.currentPos) pastLatLngs.push([data.currentPos.lat, data.currentPos.lon]);
 
   if (pastLatLngs.length >= 2) {
     L.polyline(pastLatLngs, {
-      color: '#222222',
+      color: '#9ca3af', // light grey
       weight: 3,
       opacity: 0.8,
     }).addTo(map);
   }
 
-  // ── 4. Past position markers (dark dots) ──
+  // ── 4. Past position markers (light grey dots) ──
   data.pastPositions.forEach(p => {
     const timeStr = formatTcTime(p.time);
     const popup = `
@@ -485,8 +508,8 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
       </div>`;
     L.circleMarker([p.lat, p.lon], {
       radius: 5,
-      color: '#444444',
-      fillColor: '#444444',
+      color: '#9ca3af', // light grey
+      fillColor: '#9ca3af',
       fillOpacity: 0.9,
       weight: 1,
     }).addTo(map).bindPopup(popup);
@@ -537,6 +560,8 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
   }
 
   // ── 6. Forecast track — segmented by intensity color ──
+  // Each segment is colored based on the intensity of the segment (averaged
+  // between the two endpoints so a transitional segment reflects the change).
   const forecastSegments = [];
   if (data.currentPos) {
     forecastSegments.push({ lat: data.currentPos.lat, lon: data.currentPos.lon, intensity: data.currentPos.intensity });
@@ -547,14 +572,19 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
 
   if (forecastSegments.length >= 2) {
     for (let i = 0; i < forecastSegments.length - 1; i++) {
-      const segColor = getIntensityColor(forecastSegments[i + 1].intensity);
+      const a = forecastSegments[i];
+      const b = forecastSegments[i + 1];
+      // Prefer the destination endpoint's intensity; if it has none, fall
+      // back to the start endpoint. Otherwise use the higher-priority one.
+      const segIntensity = b.intensity || a.intensity;
+      const segColor = getIntensityColor(segIntensity);
       L.polyline([
-        [forecastSegments[i].lat, forecastSegments[i].lon],
-        [forecastSegments[i + 1].lat, forecastSegments[i + 1].lon],
+        [a.lat, a.lon],
+        [b.lat, b.lon],
       ], {
         color: segColor,
         weight: 3,
-        opacity: 0.7,
+        opacity: 0.85,
         dashArray: '6 4',
       }).addTo(map);
     }
@@ -620,9 +650,9 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     `;
     div.innerHTML = `
       <div style="font-weight:700;margin-bottom:4px">圖例 Legend</div>
-      <div><span style="display:inline-block;width:12px;height:3px;background:#222;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
-      <div><span style="display:inline-block;width:12px;height:3px;background:#ef4444;margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
+      <div><span style="display:inline-block;width:12px;height:3px;background:#9ca3af;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
+      <div><span style="display:inline-block;width:12px;height:3px;background:linear-gradient(to right,#22c55e 0,#22c55e 16%,#3b82f6 16%,#3b82f6 33%,#ef4444 33%,#ef4444 50%,#ec4899 50%,#ec4899 66%,#a855f7 66%,#a855f7 100%);margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track (按強度著色)</div>
+      <div><span style="display:inline-block;width:8px;height:8px;background:#9ca3af;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
       <div style="margin-top:4px;font-weight:600">與香港距離 Distance from HK</div>
       <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #dc2626;margin-right:6px;vertical-align:middle"></span> 200 公里範圍</div>
       <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #b45309;margin-right:6px;vertical-align:middle"></span> 400 公里範圍</div>

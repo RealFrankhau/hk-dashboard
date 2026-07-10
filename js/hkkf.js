@@ -192,7 +192,7 @@ const HKKF = (function() {
     const routesEl = document.getElementById('hkkf-routes');
     const updated = document.getElementById('hkkf-updated');
     if (!etaEl) return;
-    etaEl.innerHTML = `<div class="skel skel-p"></div><div class="skel skel-p" style="margin-top:8px;width:70%"></div>`;
+    etaEl.innerHTML = `<div class="skel" style="height:142px;border-radius:var(--r-lg)"></div><div class="skel" style="height:142px;border-radius:var(--r-lg)"></div><div class="skel" style="height:142px;border-radius:var(--r-lg)"></div><div class="skel" style="height:142px;border-radius:var(--r-lg)"></div>`;
     if (routesEl) routesEl.innerHTML = `<div class="skel skel-p"></div>`;
     try {
       const routes = await fetchRoutes();
