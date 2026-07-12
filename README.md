@@ -91,12 +91,14 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 |------|------|-----|
 | 天氣、潮汐、地震 | 香港天文台 HKO | `data.weather.gov.hk` |
 | 急症室等候時間 | 醫院管理局 HA | `ha.org.hk` |
-| MTR / 輕鐵班次 | 香港鐵路 MTR | `rt.data.gov.hk` |
-| KMB 九巴 ETA | 九龍巴士 | `data.etabus.gov.hk` |
-| CTB 城巴 ETA | 城巴 | `rt.data.gov.hk` |
+| MTR / 輕鐵班次 | 香港鐵路 MTR | `mtr.com.hk` |
+| KMB 九巴 ETA | 九龍巴士 | `kmb.hk` |
+| CTB 城巴 ETA | 城巴 | `mobile.citybus.com.hk` |
 | GMB 專線小巴 | 運輸署 | `data.etagmb.gov.hk` |
+| 新渡輪 ETA | 新渡輪 | `sunferry.com.hk` |
+| HKKF ETA | 港九小輪 | `hkkf.com.hk` |
 | 公眾假期 | 1823 | `1823.gov.hk` |
-| 航班資訊 | 香港國際機場 | `https://www.hongkongairport.com/tc/flights/departures/passenger.page` |
+| 航班資訊 | 香港國際機場 | `hongkongairport.com` |
 
 
 

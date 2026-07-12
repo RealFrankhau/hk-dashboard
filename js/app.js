@@ -196,9 +196,15 @@ async function loadWeatherForecastText() {
     const r = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=tc');
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
-    const { generalSituation, forecastDesc, outlook } = data;
+    const { generalSituation, forecastPeriod, forecastDesc, tcInfo, fireDangerWarning, outlook } = data;
     cont.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:var(--sp-4)">
+        ${tcInfo ? `
+          <div>
+            <div style="font-size:var(--text-xs);color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)">熱帶氣旋資訊 Tropical Cyclone Info</div>
+            <div style="font-size:var(--text-sm);line-height:1.7;color:var(--text-muted)">${tcInfo}</div>
+          </div>
+        ` : ''}
         ${generalSituation ? `
           <div>
             <div style="font-size:var(--text-xs);color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)">天氣概況 General Situation</div>
@@ -208,7 +214,7 @@ async function loadWeatherForecastText() {
         ${forecastDesc ? `
           <div>
             <div style="font-size:var(--text-xs);color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)">天氣預測 Forecast</div>
-            <div style="font-size:var(--text-sm);line-height:1.7;color:var(--text-muted)">${forecastDesc}</div>
+            <div style="font-size:var(--text-sm);line-height:1.7;color:var(--text-muted)">${forecastPeriod ? forecastPeriod + '： ' : ''}${forecastDesc}</div>
           </div>
         ` : ''}
         ${outlook ? `
@@ -217,6 +223,12 @@ async function loadWeatherForecastText() {
             <div style="font-size:var(--text-sm);line-height:1.7;color:var(--text-muted)">${outlook}</div>
           </div>
         ` : ''}
+        ${fireDangerWarning ? `
+          <div>
+            <div style="font-size:var(--text-xs);color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)">展望 Outlook</div>
+            <div style="font-size:var(--text-sm);line-height:1.7;color:var(--text-muted)">${fireDangerWarning}</div>
+          </div>
+        ` : ''}        
       </div>
     `;
   } catch(e) {

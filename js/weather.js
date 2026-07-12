@@ -72,13 +72,12 @@ const WX_WARN_MAP = {
 
 /* ── Weather icon description map ─────────────────────────── */
 const WX_DESC = {
-  50:'晴天', 51:'間有陽光', 52:'短暫陽光', 53:'多雲', 54:'多雲幾陣雨',
-  60:'陰天', 61:'陰天有驟雨', 62:'雷暴', 63:'陰天驟雨雷暴', 64:'霧',
-  65:'微風', 70:'天色良好', 71:'天色良好', 72:'天色良好', 73:'天色良好',
-  74:'天色良好', 75:'天色良好', 76:'天色良好', 77:'天色良好',
-  80:'大驟雨', 81:'驟雨', 82:'短暫時間有雨', 83:'有雨', 84:'傾盆大雨',
-  85:'有驟雨', 86:'有驟雨', 87:'雷暴', 88:'雷暴', 89:'龍捲風',
-  90:'熱帶氣旋', 91:'強烈季候風信號', 92:'偶有陽光', 93:'多雲', 94:'天色大致良好'
+  50:'陽光充沛', 51:'間有陽光', 52:'短暫陽光', 53:'間有陽光幾陣驟雨', 54:'短暫陽光有驟雨',
+  60:'多雲', 61:'密雲', 62:'微雨', 63:'雨', 64:'大雨', 65:'雷暴', 
+  70:'天色良好', 71:'天色良好', 72:'天色良好', 73:'天色良好',
+  74:'天色良好', 75:'天色良好', 76:'大致多雲', 77:'天色大致良好',
+  80:'大風', 81:'乾燥', 82:'潮濕', 83:'霧', 84:'薄霧', 85:'煙霞', 
+  90:'熱', 91:'暖', 92:'偶有陽光', 93:'涼', 94:'冷'
 };
 
 /* ── Fetch current weather (rhrread) ────────────────────────── */
@@ -103,10 +102,15 @@ function renderCurrentWeather(d) {
   setEl('w-temp', main.value ?? '--');
   setEl('h-temp', main.value ?? '--');
 
+  // Tsing Yi temperature for top card
+  const tsingYi = temps.find(t => t.place === '青衣');
+  setEl('h-top-temp', tsingYi?.value != null ? tsingYi.value + '℃' : '--℃');
+
   // Humidity
   const hum = d.humidity?.data?.[0]?.value ?? '--';
   setEl('w-hum', hum + (hum !== '--' ? '%' : ''));
   setEl('h-hum', hum);
+  setEl('h-top-hum', hum !== '--' ? hum + '%' : '--%');
 
   // Icon + description
   const iconCode = d.icon?.[0];
@@ -115,6 +119,9 @@ function renderCurrentWeather(d) {
   setImgSrc('w-icon', iconUrl);
   setEl('w-desc', desc);
   setImgSrc('h-wicon', iconUrl);
+  setImgSrc('h-top-wicon', iconUrl);
+  const topWicon = document.getElementById('h-top-wicon');
+  if (topWicon) topWicon.title = desc;
   setEl('h-wdesc', desc);
 
   // UV
@@ -358,6 +365,21 @@ function renderForecast(d) {
     }).join('');
   }
 
+  // Top card: first day high/low
+  const firstDay = days[0];
+  if (firstDay) {
+    const hi = firstDay.forecastMaxtemp?.value;
+    const lo = firstDay.forecastMintemp?.value;
+    const hiEl = document.getElementById('h-top-hi');
+    const loEl = document.getElementById('h-top-lo');
+    if (hiEl) {
+      hiEl.textContent = hi != null ? hi + '℃ 🔼' : '--';
+    }
+    if (loEl) {
+      loEl.textContent = lo != null ? lo + '℃ 🔽' : '--';
+    }
+  }
+
   // Weather page forecast (larger)
   const wForecast = document.getElementById('w-forecast9');
   if (wForecast) {
@@ -482,6 +504,25 @@ function renderWarnsum(data) {
   }).join('');
 
   els.forEach(e => e.innerHTML = html);
+
+  // Top card: compact warning icons
+  const topWarn = document.getElementById('h-top-warnings');
+  if (topWarn) {
+    if (!data || Object.keys(data).length === 0) {
+      topWarn.innerHTML = '';
+    } else {
+      const warnings = Object.entries(data);
+      topWarn.innerHTML = warnings.map(([outerKey, w]) => {
+        const subCode = w.code || outerKey || '';
+        const warnInfo = WX_WARN_MAP[subCode] || WX_WARN_MAP[outerKey];
+        const iconUrl = warnInfo?.icon ? (warnInfo.icon.startsWith('/') || warnInfo.icon.startsWith('http') ? warnInfo.icon : getWarningIconUrl(warnInfo.icon)) : '';
+        const name = warnInfo?.text || w.name || w.type || '警告';
+        return iconUrl
+          ? `<img src="${iconUrl}" alt="${name}" title="${name}" style="width:50px;height:50px;object-fit:contain;cursor:help;vertical-align:middle;">`
+          : '';
+      }).filter(Boolean).join('');
+    }
+  }
 }
 
 /* ── Render warningInfo details ─────────────────────────────── */
@@ -493,10 +534,7 @@ function renderWarningInfo(details) {
     return `
       <div class="card" style="border-color:var(--warning);margin-top:var(--sp-3)">
         <div style="font-weight:700;color:var(--warning);margin-bottom:var(--sp-2)">${d.warningStatementCode || d.subtype || '警告'}</div>
-        ${contents.map(c => {
-          const lines = c.value || [];
-          return lines.map(line => `<div style="font-size:var(--text-sm);color:var(--text-muted);line-height:1.6;margin-bottom:4px">${line}</div>`).join('');
-        }).join('')}
+        ${contents.map(line => `<div style="font-size:var(--text-sm);color:var(--text-muted);line-height:1.6;margin-bottom:4px">${line}</div>`).join('')}
       </div>
     `;
   }).join('');

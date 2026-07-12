@@ -76,6 +76,24 @@ function updateClock() {
     });
     date.textContent = d;
   }
+
+  // Top card clock (24h HH:MM)
+  const topTime = document.getElementById('h-top-time');
+  if (topTime) {
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    topTime.textContent = hh + ':' + mm;
+  }
+
+  // Top card date (YYYY年M月D日 (dow))
+  const topDate = document.getElementById('h-top-date');
+  if (topDate) {
+    const y = now.getFullYear();
+    const m = now.getMonth() + 1;
+    const d = now.getDate();
+    const dow = ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
+    topDate.textContent = y + '年' + m + '月' + d + '日 (' + dow + ')';
+  }
 }
 updateClock();
 setInterval(updateClock, 1000);

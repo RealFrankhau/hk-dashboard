@@ -17,6 +17,15 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    @font-face {
+      font-family: 'ZenMaruGothic';
+      src: url('./assets/fonts/ZenMaruGothic-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
 </head>
 <body>
 
@@ -123,61 +132,31 @@
   <div id="page-home" class="page active">
     <div class="dash-grid" style="grid-template-columns: repeat(4,1fr)">
 
-      <!-- Hero weather mini -->
-      <div class="card" style="grid-column:span 1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; min-height:160px; gap:var(--sp-3); background: linear-gradient(135deg, var(--primary-lt), var(--surface));">
-        <img id="h-wicon" src="" style="width:56px;height:56px;object-fit:contain" alt="天氣" onerror="this.style.display='none'">
-        <div>
-          <span class="big-num" id="h-temp">--</span><span class="big-unit">°C</span>
-        </div>
-        <div style="font-size:var(--text-sm);color:var(--text-muted)" id="h-wdesc">載入中...</div>
-        <div class="tag tag-muted" style="font-size:10px" id="h-wtime"></div>
+      <!-- ══ TOP STATUS BAR ══ -->
+       <div class="card" id="h-top-card" style="grid-column:span 4; display:flex; flex-direction:row; align-items:center; justify-content:flex-start; padding:var(--sp-3) var(--sp-5); min-height:52px; gap:var(--sp-4); flex-wrap:wrap; background:var(--surface-2); font-family:'ZenMaruGothic',var(--font-body);">
+        <!-- 1. 時間 -->
+        <span id="h-top-time" style="font-size:var(--text-lg); font-weight:700; color:var(--text); margin-right:var(--sp-4);">--:--</span>
+        <!-- 2. 日期 -->
+        <span id="h-top-date" style="font-size:var(--text-lg); font-weight:700; color:var(--text); white-space:nowrap;">----年-月-日 (-)</span>
+        <!-- 3. 溫度 -->
+        <span id="h-top-temp" style="font-size:var(--text-lg); font-weight:700; color:var(--text);">--℃</span>
+        <!-- 4. 相對濕度 -->
+        <span id="h-top-hum" style="font-size:var(--text-lg); font-weight:700; color:var(--text);">--%</span>
+        <!-- 5. 最高溫度 -->
+        <span id="h-top-hi" style="font-size:var(--text-lg); font-weight:700; color:var(--text);">--</span>
+        <!-- 6. 最低溫度 -->
+        <span id="h-top-lo" style="font-size:var(--text-lg); font-weight:700; color:var(--text);">--</span>
+        <!-- 7. 天氣標記圖示 -->
+        <img id="h-top-wicon" src="" style="width:50px;height:50px;object-fit:contain;vertical-align:middle;" alt="" onerror="this.style.display='none'">
+        <!-- 8. 天氣警告圖示 -->
+        <span id="h-top-warnings" style="display:inline-flex; align-items:center; gap:4px;"></span>
       </div>
 
-      <!-- Humidity / UV / Sea -->
-      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:var(--sp-2)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity=".2"/><path d="M12 2l0 0c0 0-6 7-6 12a6 6 0 0012 0c0-5-6-12-6-12z"/></svg>
-        <div><span class="big-num" id="h-hum" style="font-size:var(--text-2xl)">--</span><span class="big-unit" style="font-size:var(--text-base)">%</span></div>
-        <div style="font-size:var(--text-xs);color:var(--text-muted)">相對濕度</div>
-      </div>
-
-      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:var(--sp-2)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <div><span class="big-num" id="h-uv" style="font-size:var(--text-2xl)">--</span></div>
-        <div style="font-size:var(--text-xs);color:var(--text-muted)" id="h-uvd">紫外線指數</div>
-      </div>
-
-      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:var(--sp-2)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5"><path d="M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M2 18c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></svg>
-        <div><span class="big-num" id="h-sea" style="font-size:var(--text-2xl)">--</span><span class="big-unit" style="font-size:var(--text-base)">°C</span></div>
-        <div style="font-size:var(--text-xs);color:var(--text-muted)">海水溫度</div>
-      </div>
-
-      <!-- Weather Warnings Summary (warnsum API) -->
-      <div class="card" style="grid-column:span 4">
-        <div class="card-head">
-          <div class="card-title">天氣警告 Weather Warnings</div>
-          <span class="card-badge badge-source">HKO Warnsum</span>
-        </div>
-        <div style="margin-bottom:var(--sp-2);font-size:0.9rem;color:var(--text-faint)">使用香港天文台官方天氣警告圖示</div>
-        <div id="w-warnsum" class="row-list warning-icons">
-          <div class="skel skel-p"></div>
-        </div>
-        <div id="w-warning-details"></div>
-      </div>
 
       <!-- Warning strip -->
       <div id="h-warn" class="warn-strip hidden" style="grid-column:span 4">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         <div id="h-warn-text"></div>
-      </div>
-
-      <!-- 9-day forecast mini -->
-      <div class="card" style="grid-column:span 4">
-        <div class="card-head">
-          <div class="card-title">九天天氣預報</div>
-          <span class="card-badge badge-source">香港天文台</span>
-        </div>
-        <div class="scroll-row" id="h-forecast"></div>
       </div>
 
 
@@ -196,19 +175,19 @@
         </div>
       </div>
 
-      <!-- AED mini -->
+     <!-- ③ 常用站點快覽 -->
       <div class="card" style="grid-column:span 2">
         <div class="card-head">
           <div>
-            <div class="card-title">急症室等候時間 - T45 乙丙類急症（半緊急/非緊急）</div>
-            <div class="card-sub">醫院管理局</div>
+            <div class="card-title">⭐ 常用巴士站點 Preset Bus Stops</div>
+            <div class="card-sub">常用巴士路線實時班次</div>
           </div>
           <span class="card-badge badge-live">● 實時</span>
         </div>
-        <div id="h-aed-content" class="row-list">
-          <div class="skel skel-p"></div>
-          <div class="skel skel-p" style="margin-top:6px"></div>
-          <div class="skel skel-p" style="margin-top:6px"></div>
+        <div class="bus-presets-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--sp-3)">
+          <div class="skel" style="height:80px;border-radius:var(--r-lg)"></div>
+          <div class="skel" style="height:80px;border-radius:var(--r-lg)"></div>
+          <div class="skel" style="height:80px;border-radius:var(--r-lg)"></div>
         </div>
       </div>
 
@@ -307,15 +286,6 @@
         </div>
       </div>
 
-
-
-      <!-- Forecast 9-day -->
-      <div class="card" style="grid-column:span 3">
-        <div class="card-head"><div class="card-title">九天天氣預報 9-Day Forecast</div></div>
-        <div class="scroll-row" id="w-forecast9" style="gap:var(--sp-2)"></div>
-        <div style="margin-top:var(--sp-3);font-size:var(--text-xs);color:var(--text-faint)" id="w-general"></div>
-      </div>
-
       <!-- Warning -->
       <div id="w-warn-wrap" style="grid-column:span 3; display:none">
         <div class="warn-strip" id="w-warn"></div>
@@ -333,6 +303,14 @@
         </div>
         <div id="w-warning-details-page"></div>
       </div>
+
+      <!-- Forecast 9-day -->
+      <div class="card" style="grid-column:span 3">
+        <div class="card-head"><div class="card-title">九天天氣預報 9-Day Forecast</div></div>
+        <div class="scroll-row" id="w-forecast9" style="gap:var(--sp-2)"></div>
+        <div style="margin-top:var(--sp-3);font-size:var(--text-xs);color:var(--text-faint)" id="w-general"></div>
+      </div>
+
 
       <!-- Local forecast text -->
       <div class="card" style="grid-column:span 3">
@@ -410,14 +388,6 @@
         <div><div class="section-hdr-title-zh">鐵路交通資訊</div><div class="section-hdr-title-en">Real-time Rail Transport Information</div></div>
       </div>
 
-      <!-- MTR Service Status Summary -->
-      <div class="card" style="grid-column:span 2">
-        <div class="card-head">
-          <div><div class="card-title">🚇 MTR路線服務狀況</div><div class="card-sub">各線即時服務狀態 MTR Line Service Status</div></div>
-          <span class="card-badge badge-live">● 實時</span>
-        </div>
-        <div id="t-mtr-status" class="row-list"></div>
-      </div>
 
       <!-- MTR -->
       <div class="card">
@@ -519,6 +489,15 @@
         <div id="t-lrt" class="row-list"></div>
       </div>
 
+      <!-- MTR Service Status Summary -->
+      <div class="card" style="grid-column:span 2">
+        <div class="card-head">
+          <div><div class="card-title">🚇 MTR路線服務狀況</div><div class="card-sub">各線即時服務狀態 MTR Line Service Status</div></div>
+          <span class="card-badge badge-live">● 實時</span>
+        </div>
+        <div id="t-mtr-status" class="row-list"></div>
+      </div>
+
     </div>
   </div>
 
@@ -545,7 +524,7 @@
           </div>
           <span class="card-badge badge-live">● 實時</span>
         </div>
-        <div id="bus-presets-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--sp-3)">
+        <div class="bus-presets-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--sp-3)">
           <div class="skel" style="height:80px;border-radius:var(--r-lg)"></div>
           <div class="skel" style="height:80px;border-radius:var(--r-lg)"></div>
           <div class="skel" style="height:80px;border-radius:var(--r-lg)"></div>

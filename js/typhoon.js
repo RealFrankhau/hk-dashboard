@@ -115,6 +115,20 @@ function formatDistanceBearing(lat, lon) {
   return `距離香港以${dir}約 ${formatDistance(dist)}`;
 }
 
+/* ── Calculate speed (km/h) between two positions with times ── */
+function calcSpeed(lat1, lon1, time1, lat2, lon2, time2) {
+  if (!time1 || !time2) return null;
+  try {
+    const t1 = new Date(time1);
+    const t2 = new Date(time2);
+    if (isNaN(t1.getTime()) || isNaN(t2.getTime())) return null;
+    const hours = Math.abs(t2 - t1) / 3600000;
+    if (hours < 0.01) return null;
+    const distKm = calcDistance(lat1, lon1, lat2, lon2);
+    return Math.round(distKm / hours);
+  } catch (_) { return null; }
+}
+
 /* ── Parse HKO TC track XML ────────────────────────────────── */
 function parseTcTrackXml(xmlText) {
   const parser = new DOMParser();
@@ -213,9 +227,9 @@ function parseTcTrackXml(xmlText) {
    so the markers fall back to grey. This helper walks the list and
    carries the last known intensity forward; when a new key-hour value
    appears, that one takes over for the next segment. */
-function fillForecastIntensities(forecastPositions) {
+function fillForecastIntensities(forecastPositions, initialIntensity) {
   if (!Array.isArray(forecastPositions)) return [];
-  let lastKnown = '';
+  let lastKnown = initialIntensity || '';
   return forecastPositions.map(p => {
     if (p.intensity && p.intensity.trim()) {
       lastKnown = p.intensity.trim();
@@ -248,6 +262,7 @@ function getIntensityColor(intensity) {
     'Tropical Storm':      '#22c55e', // 綠
     'Tropical Depression': '#333333', // 黑
     'Low Pressure Area':   '#94a3b8',
+    'Extratropical Low':   '#94a3b8',
   };
   return map[intensity] || '#94a3b8';
 }
@@ -262,6 +277,7 @@ function getIntensityChinese(intensity) {
     'Tropical Storm':       '熱帶風暴',
     'Tropical Depression':  '熱帶低氣壓',
     'Low Pressure Area':    '低壓區',
+    'Extratropical Low':    '温帶低氣區'
   };
   return map[intensity] || intensity;
 }
@@ -398,8 +414,14 @@ async function loadTcFromList(entries, index) {
       return;
     }
 
-    // Backfill forecast intensities so every forecast point has a color
-    data.forecastPositions = fillForecastIntensities(data.forecastPositions);
+    // Backfill forecast intensities so every forecast point has a color.
+    // Use the current position's intensity as the starting value so the
+    // early forecast points (3h, 6h, 9h) inherit it until a key-hour
+    // intensity appears.
+    data.forecastPositions = fillForecastIntensities(
+      data.forecastPositions,
+      data.currentPos ? data.currentPos.intensity : ''
+    );
 
     renderTyphoonMap(data, tc.cn, tc.en, tc.id);
     renderTyphoonInfo(data, tc.cn, tc.en, tc.id);
@@ -496,15 +518,27 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
   }
 
   // ── 4. Past position markers (light grey dots) ──
-  data.pastPositions.forEach(p => {
+  data.pastPositions.forEach((p, idx) => {
     const timeStr = formatTcTime(p.time);
+
+    // Calculate speed from previous past position (or currentPos for
+    // the most recent past position).
+    let speedKmh = null;
+    if (idx === 0 && data.currentPos) {
+      speedKmh = calcSpeed(p.lat, p.lon, p.time, data.currentPos.lat, data.currentPos.lon, data.currentPos.time);
+    } else if (idx > 0) {
+      const prev = data.pastPositions[idx - 1];
+      speedKmh = calcSpeed(prev.lat, prev.lon, prev.time, p.lat, p.lon, p.time);
+    }
+
     const popup = `
       <div style="font-size:12px;line-height:1.6">
         <strong>過去位置 Past</strong><br>
         ${timeStr}<br>
         ${p.lat.toFixed(2)}°${p.lat >= 0 ? 'N' : 'S'}, ${p.lon.toFixed(2)}°${p.lon >= 0 ? 'E' : 'W'}<br>
         ${getIntensityChinese(p.intensity)}<br>
-        風速 Wind: ${p.wind}
+        風速 Wind: ${p.wind}<br>
+        ${speedKmh != null ? '移動速度 Speed: ' + speedKmh + ' km/h' : ''}
       </div>`;
     L.circleMarker([p.lat, p.lon], {
       radius: 5,
@@ -519,6 +553,14 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
   if (data.currentPos) {
     const cp = data.currentPos;
     const timeStr = formatTcTime(cp.time);
+
+    // Calculate speed from last past position to current
+    let cpSpeedKmh = null;
+    if (data.pastPositions && data.pastPositions.length > 0) {
+      const lastPast = data.pastPositions[data.pastPositions.length - 1];
+      cpSpeedKmh = calcSpeed(lastPast.lat, lastPast.lon, lastPast.time, cp.lat, cp.lon, cp.time);
+    }
+
     const popup = `
       <div style="font-size:12px;line-height:1.6">
         <strong>${cnName} ${enName}</strong><br>
@@ -529,13 +571,20 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
         風速 Wind: ${cp.wind}<br>
         ${cp.pressure ? '氣壓 Pressure: ' + cp.pressure + '<br>' : ''}
         ${cp.movement ? '移動方向 Movement: ' + cp.movement + '<br>' : ''}
-        ${cp.speed ? '移動速度 Speed: ' + cp.speed : ''}
+        ${cp.speed ? '移動速度 Speed: ' + cp.speed + '<br>' : ''}
+        ${cpSpeedKmh != null ? '移速 (計算) Speed (calc): ' + cpSpeedKmh + ' km/h' : ''}
       </div>`;
+
+    // Current position marker uses AnalysisInformation's own intensity
+    // (the strength at the present time). This matches the first
+    // forecast segment, which also starts at the current position and
+    // therefore uses the same intensity as its starting endpoint.
+    const cpColor = getIntensityColor(cp.intensity);
 
     L.circleMarker([cp.lat, cp.lon], {
       radius: 8,
-      color: '#ef4444',
-      fillColor: '#ef4444',
+      color: cpColor,
+      fillColor: cpColor,
       fillOpacity: 1,
       weight: 2,
     }).addTo(map).bindPopup(popup);
@@ -544,7 +593,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     const icon = L.divIcon({
       className: 'tc-current-label',
       html: `<div style="
-        background:var(--primary,#ef4444);
+        background:${cpColor};
         color:black;
         padding:2px 8px;
         border-radius:4px;
@@ -559,46 +608,68 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     L.marker([cp.lat, cp.lon], { icon }).addTo(map);
   }
 
-  // ── 6. Forecast track — segmented by intensity color ──
-  // Each segment is colored based on the intensity of the segment (averaged
-  // between the two endpoints so a transitional segment reflects the change).
-  const forecastSegments = [];
+  // ── 6. Forecast track — grouped by intensity runs ──
+  // Group consecutive points that share the same intensity, and draw a
+  // single polyline per group. A new group starts at the first point
+  // whose intensity differs from the previous one. The first group
+  // begins at the current position (AnalysisInformation). Mid-points
+  // with no intensity are back-filled by fillForecastIntensities using
+  // the last known value, so they do not break the group.
+  const forecastPoints = [];
   if (data.currentPos) {
-    forecastSegments.push({ lat: data.currentPos.lat, lon: data.currentPos.lon, intensity: data.currentPos.intensity });
+    forecastPoints.push({ lat: data.currentPos.lat, lon: data.currentPos.lon, intensity: data.currentPos.intensity });
   }
   data.forecastPositions.forEach(p => {
-    forecastSegments.push({ lat: p.lat, lon: p.lon, intensity: p.intensity });
+    forecastPoints.push({ lat: p.lat, lon: p.lon, intensity: p.intensity });
   });
 
-  if (forecastSegments.length >= 2) {
-    for (let i = 0; i < forecastSegments.length - 1; i++) {
-      const a = forecastSegments[i];
-      const b = forecastSegments[i + 1];
-      // Prefer the destination endpoint's intensity; if it has none, fall
-      // back to the start endpoint. Otherwise use the higher-priority one.
-      const segIntensity = b.intensity || a.intensity;
-      const segColor = getIntensityColor(segIntensity);
-      L.polyline([
-        [a.lat, a.lon],
-        [b.lat, b.lon],
-      ], {
-        color: segColor,
-        weight: 3,
-        opacity: 0.85,
-        dashArray: '6 4',
-      }).addTo(map);
+  if (forecastPoints.length >= 2) {
+    let groupStartIdx = 0;
+    for (let i = 1; i < forecastPoints.length; i++) {
+      const prev = forecastPoints[i - 1];
+      const curr = forecastPoints[i];
+      const intensityChanged = (curr.intensity || '') !== (prev.intensity || '');
+      const isLast = i === forecastPoints.length - 1;
+
+      if (intensityChanged || isLast) {
+        // Draw the group from groupStartIdx up to and including the
+        // current point i. When intensity changes at i, we include i
+        // in this group so the connecting segment (prev→curr) is
+        // drawn. The next group will also start at i, so the change
+        // point is shared by both groups (no gap in the path).
+        const groupPts = forecastPoints.slice(groupStartIdx, i + 1);
+        if (groupPts.length >= 2) {
+          const groupColor = getIntensityColor(prev.intensity);
+          L.polyline(
+            groupPts.map(p => [p.lat, p.lon]),
+            {
+              color: groupColor,
+              weight: 3,
+              opacity: 0.85,
+              dashArray: '6 4',
+            }
+          ).addTo(map);
+        }
+        if (intensityChanged) {
+          // Start a new group at the change-point so its color
+          // reflects the new intensity from that point onward.
+          groupStartIdx = i;
+        }
+      }
     }
   }
 
   // ── 7. Forecast position markers (colored by intensity with time labels) ──
-  // Key forecast points: 12h (index ~21), 24h, 36h (index ~45), 48h, 72h (index ~69)
-  const keyForecastIndices = [21, 45, 69];
+  // Only show markers at 24h, 48h, 72h. All forecast points are still used
+  // for the path polyline above.
+  const keyForecastIndices = [24, 48, 72];
   data.forecastPositions.forEach(p => {
     const isKey = keyForecastIndices.includes(p.index);
-    const radius = isKey ? 7 : 5;
-    const fcColor = getIntensityColor(p.intensity);
+    if (!isKey) return; // skip non-key points — path already drawn
 
+    const fcColor = getIntensityColor(p.intensity);
     const timeStr = p.time ? formatTcTime(p.time) : '';
+
     const popup = `
       <div style="font-size:12px;line-height:1.6">
         <strong>預測 Forecast (${p.index}h)</strong><br>
@@ -609,7 +680,7 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
       </div>`;
 
     L.circleMarker([p.lat, p.lon], {
-      radius,
+      radius: 7,
       color: fcColor,
       fillColor: fcColor,
       fillOpacity: 0.9,
@@ -694,11 +765,12 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
     forecastMap[p.index] = p;
   });
 
-  const keyHours = [12, 24, 36, 48, 72];
+  const keyHours = [12, 24, 36, 48, 60, 72];
   const forecastRows = keyHours.map(h => {
     const f = forecastMap[h];
     if (!f) return null;
     const distText = formatDistanceBearing(f.lat, f.lon);
+
     return `
       <tr>
         <td data-label="時段">&nbsp;&nbsp;&nbsp;&nbsp;+${h}h</td>
@@ -706,7 +778,6 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
         <td data-label="經度">&nbsp;&nbsp;&nbsp;&nbsp;${f.lon.toFixed(1)}°${f.lon >= 0 ? 'E' : 'W'}</td>
         <td data-label="強度">&nbsp;&nbsp;&nbsp;&nbsp;${getIntensityChinese(f.intensity) || '--'}</td>
         <td data-label="風速">&nbsp;&nbsp;&nbsp;&nbsp;${f.wind || '--'}</td>
-        <td data-label="氣壓">&nbsp;&nbsp;&nbsp;&nbsp;--</td>
         <td data-label="距港距離" style="font-size:14px">&nbsp;&nbsp;&nbsp;&nbsp;${distText}</td>
         <td data-label="時間">&nbsp;&nbsp;&nbsp;&nbsp;${f.time ? formatTcTime(f.time) : '--'}</td>
       </tr>`;
@@ -723,7 +794,7 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
     ">
       <thead>
         <tr style="border-bottom:2px solid var(--border)">
-          <th colspan="8" style="text-align:left;padding:var(--sp-2) var(--sp-3);font-size:var(--text-base)">
+          <th colspan="7" style="text-align:left;padding:var(--sp-2) var(--sp-3);font-size:var(--text-base)">
             ${cnName} ${enName} (${tcId})
           </th>
         </tr>
@@ -733,7 +804,6 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">經度</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">強度</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">風速</th>
-          <th style="padding:var(--sp-2) var(--sp-3);text-align:left">氣壓</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">距港距離</th>
           <th style="padding:var(--sp-2) var(--sp-3);text-align:left">時間</th>
         </tr>
@@ -745,7 +815,6 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
           <td data-label="經度" style="padding:var(--sp-2) var(--sp-3)">${cp.lon.toFixed(1)}°${cp.lon >= 0 ? 'E' : 'W'}</td>
           <td data-label="強度" style="padding:var(--sp-2) var(--sp-3)">${getIntensityChinese(cp.intensity) || '--'}</td>
           <td data-label="風速" style="padding:var(--sp-2) var(--sp-3)">${cp.wind || '--'}</td>
-          <td data-label="氣壓" style="padding:var(--sp-2) var(--sp-3)">${cp.pressure || '--'}</td>
           <td data-label="距港距離" style="padding:var(--sp-2) var(--sp-3);font-size:14px">${currentDistText}</td>
           <td data-label="時間" style="padding:var(--sp-2) var(--sp-3)">${cp.time ? formatTcTime(cp.time) : '--'}</td>
         </tr>

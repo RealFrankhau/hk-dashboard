@@ -146,9 +146,9 @@ async function getCTBRouteInfo(route) {
 const Bus = (function() {
 
   function renderPresetGrid() {
-    const grid = document.getElementById('bus-presets-grid');
-    if (!grid) return;
-    grid.innerHTML = PRESET_STOPS.map((p, i) => `
+    const grids = document.querySelectorAll('.bus-presets-grid');
+    if (!grids.length) return;
+    const html = PRESET_STOPS.map((p, i) => `
       <div class="card" style="padding:var(--sp-3)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <span class="tag ${p.operator==='KMB'?'tag-red':'tag-green'}"
@@ -158,16 +158,17 @@ const Bus = (function() {
             <div style="font-size:10px;color:var(--text-faint)">${p.route} · ${p.hint}</div>
           </div>
         </div>
-        <div id="preset-eta-${i}">
+        <div class="preset-eta" data-idx="${i}">
           <div class="skel" style="height:24px;border-radius:6px"></div>
         </div>
       </div>
     `).join('');
+    grids.forEach(g => { g.innerHTML = html; });
   }
 
   async function loadPreset(p, i) {
-    const cont = document.getElementById(`preset-eta-${i}`);
-    if (!cont) return;
+    const conts = document.querySelectorAll(`.preset-eta[data-idx="${i}"]`);
+    if (!conts.length) return;
     try {
       let etas = [];
       if (p.operator === 'KMB') {
@@ -188,12 +189,13 @@ const Bus = (function() {
         if (byDest[dest].length < 3 && (e.eta || e.rmk_tc)) byDest[dest].push(e);
       });
 
+      const emptyHtml = `<div style="color:var(--text-faint);font-size:12px;padding:4px">暫無班次</div>`;
       if (!Object.keys(byDest).length) {
-        cont.innerHTML = `<div style="color:var(--text-faint);font-size:12px;padding:4px">暫無班次</div>`;
+        conts.forEach(c => { c.innerHTML = emptyHtml; });
         return;
       }
 
-      cont.innerHTML = Object.entries(byDest).map(([dest, arr]) => `
+      const html = Object.entries(byDest).map(([dest, arr]) => `
         <div style="margin-bottom:8px">
           <div style="font-size:11px;color:var(--text-faint);margin-bottom:4px">→ ${dest}</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
@@ -201,8 +203,10 @@ const Bus = (function() {
           </div>
         </div>
       `).join('');
+      conts.forEach(c => { c.innerHTML = html; });
     } catch {
-      cont.innerHTML = `<div style="color:var(--error);font-size:11px">載入失敗</div>`;
+      const errHtml = `<div style="color:var(--error);font-size:11px">載入失敗</div>`;
+      conts.forEach(c => { c.innerHTML = errHtml; });
     }
   }
 

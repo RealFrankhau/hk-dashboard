@@ -300,7 +300,7 @@ p, li { text-wrap: pretty; }
   }
 
   /* Bus presets: 1 col */
-  #bus-presets-grid {
+  .bus-presets-grid {
     grid-template-columns: 1fr !important;
   }
 
