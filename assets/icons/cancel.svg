@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
+  <rect width="800" height="800" fill="#163A76" />
+
+  <g fill="#FFFFFF" font-family="'Helvetica Neue', Helvetica, Arial, 'Microsoft YaHei', sans-serif" font-weight="bold" text-anchor="middle">
+    <text x="400" y="260" font-size="52" letter-spacing="4">所有熱帶氣旋警告</text>
+    <text x="400" y="400" font-size="105" letter-spacing="6">現已取消</text>
+  </g>
+
+  <g fill="#FFFFFF" font-family="'Arial Narrow', Arial, sans-serif" font-weight="bold" text-anchor="middle" letter-spacing="1">
+    <text x="400" y="525" font-size="46">ALL TROPICAL CYCLONE</text>
+    <text x="400" y="605" font-size="46">WARNINGS ARE NOW</text>
+    <text x="400" y="685" font-size="46">CANCELLED</text>
+  </g>
+</svg>

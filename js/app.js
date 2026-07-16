@@ -193,12 +193,29 @@ async function loadWeatherForecastText() {
   if (!cont) return;
   cont.innerHTML = `<div class="skel skel-p"></div><div class="skel skel-p" style="margin-top:8px"></div>`;
   try {
-    const r = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=tc');
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
-    const { generalSituation, forecastPeriod, forecastDesc, tcInfo, fireDangerWarning, outlook } = data;
+    // Fetch both FLW (forecast) and SWT (special weather tips) in parallel
+    const [flwRes, swtRes] = await Promise.all([
+      fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=flw&lang=tc'),
+      fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=swt&lang=tc'),
+    ]);
+    if (!flwRes.ok) throw new Error(`FLW HTTP ${flwRes.status}`);
+    const flw = await flwRes.json();
+    let swtDesc = '';
+    if (swtRes.ok) {
+      try {
+        const swt = await swtRes.json();
+        if (swt.swt && swt.swt.length > 0 && swt.swt[0].desc) swtDesc = swt.swt[0].desc;
+      } catch (_) { /* ignore SWT parse errors */ }
+    }
+    const { generalSituation, forecastPeriod, forecastDesc, tcInfo, fireDangerWarning, outlook } = flw;
     cont.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:var(--sp-4)">
+        ${swtDesc ? `
+          <div>
+            <div style="font-size:var(--text-xs);color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)">特別天氣提示 Special Weather Tips</div>
+            <div style="font-size:var(--text-sm);line-height:1.7;color:var(--text-muted)">${swtDesc}</div>
+          </div>
+        ` : ''}
         ${tcInfo ? `
           <div>
             <div style="font-size:var(--text-xs);color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)">熱帶氣旋資訊 Tropical Cyclone Info</div>
