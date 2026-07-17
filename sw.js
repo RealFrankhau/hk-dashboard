@@ -1,45 +1,58 @@
 /* ============================================================
    sw.js — Service Worker for Hong Kong City Dashboard
    PWA: offline cache + background sync
+   自動適配部署路徑（GitHub Pages 子路徑 / Vercel 根目錄 / 自訂網域）
    ============================================================ */
 
-const CACHE_NAME  = 'hk-dashboard-v12';
+/* ── 動態偵測 BASE_PATH ──────────────────────────────────────
+   SW 的 location 就是 manifest 所在目錄，也就是 PWA 的 scope。
+   用 location.pathname 去掉檔名「sw.js」後，即為 BASE_PATH。
+   例：
+     abc.github.io/hk-dashboard/sw.js → BASE_PATH = /hk-dashboard/
+     xxx.vercel.app/sw.js             → BASE_PATH = /
+============================================================ */
+const BASE_PATH = self.location.pathname.replace(/sw\.js$/, '');
+
+const CACHE_NAME  = 'hk-dashboard-v13';
+
+// 全部用相對 BASE_PATH 拼接，部署到任何路徑都能正確 cache
 const STATIC_URLS = [
-  '/hk-dashboard/',
-  '/hk-dashboard/index.html',
-  '/hk-dashboard/css/tokens.css',
-  '/hk-dashboard/css/base.css',
-  '/hk-dashboard/js/core.js',
-  '/hk-dashboard/js/weather.js',
-  '/hk-dashboard/js/transport.js',
-  '/hk-dashboard/js/health.js',
-  '/hk-dashboard/js/bus.js',
-  '/hk-dashboard/js/flights.js',
-  '/hk-dashboard/js/tides.js',
-  '/hk-dashboard/js/holidays.js',
-  '/hk-dashboard/js/typhoon.js',
-  '/hk-dashboard/js/app.js',
-  '/hk-dashboard/assets/icons/cold.gif',
-  '/hk-dashboard/assets/icons/firer.gif',
-  '/hk-dashboard/assets/icons/firey.gif',
-  '/hk-dashboard/assets/icons/frost.gif',
-  '/hk-dashboard/assets/icons/landslip.gif',
-  '/hk-dashboard/assets/icons/ntfl.gif',
-  '/hk-dashboard/assets/icons/raina.gif',
-  '/hk-dashboard/assets/icons/rainb.gif',
-  '/hk-dashboard/assets/icons/rainr.gif',
-  '/hk-dashboard/assets/icons/sms.gif',
-  '/hk-dashboard/assets/icons/tc1.gif',
-  '/hk-dashboard/assets/icons/tc10.gif',
-  '/hk-dashboard/assets/icons/tc3.gif',
-  '/hk-dashboard/assets/icons/tc8b.gif',
-  '/hk-dashboard/assets/icons/tc8c.gif',
-  '/hk-dashboard/assets/icons/tc8d.gif',
-  '/hk-dashboard/assets/icons/tc8ne.gif',
-  '/hk-dashboard/assets/icons/tc9.gif',
-  '/hk-dashboard/assets/icons/ts.gif',
-  '/hk-dashboard/assets/icons/tsunami-warn.gif',
-  '/hk-dashboard/assets/icons/vhot.gif',
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'manifest.json',
+  BASE_PATH + 'css/tokens.css',
+  BASE_PATH + 'css/base.css',
+  BASE_PATH + 'js/core.js',
+  BASE_PATH + 'js/weather.js',
+  BASE_PATH + 'js/transport.js',
+  BASE_PATH + 'js/health.js',
+  BASE_PATH + 'js/bus.js',
+  BASE_PATH + 'js/flights.js',
+  BASE_PATH + 'js/tides.js',
+  BASE_PATH + 'js/holidays.js',
+  BASE_PATH + 'js/typhoon.js',
+  BASE_PATH + 'js/app.js',
+  BASE_PATH + 'assets/icons/cold.gif',
+  BASE_PATH + 'assets/icons/firer.gif',
+  BASE_PATH + 'assets/icons/firey.gif',
+  BASE_PATH + 'assets/icons/frost.gif',
+  BASE_PATH + 'assets/icons/landslip.gif',
+  BASE_PATH + 'assets/icons/ntfl.gif',
+  BASE_PATH + 'assets/icons/raina.gif',
+  BASE_PATH + 'assets/icons/rainb.gif',
+  BASE_PATH + 'assets/icons/rainr.gif',
+  BASE_PATH + 'assets/icons/sms.gif',
+  BASE_PATH + 'assets/icons/tc1.gif',
+  BASE_PATH + 'assets/icons/tc10.gif',
+  BASE_PATH + 'assets/icons/tc3.gif',
+  BASE_PATH + 'assets/icons/tc8b.gif',
+  BASE_PATH + 'assets/icons/tc8c.gif',
+  BASE_PATH + 'assets/icons/tc8d.gif',
+  BASE_PATH + 'assets/icons/tc8ne.gif',
+  BASE_PATH + 'assets/icons/tc9.gif',
+  BASE_PATH + 'assets/icons/ts.gif',
+  BASE_PATH + 'assets/icons/tsunami-warn.gif',
+  BASE_PATH + 'assets/icons/vhot.gif',
   'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap',
 ];
 
@@ -116,7 +129,7 @@ self.addEventListener('fetch', event => {
       }).catch(() => {
         // Return offline fallback for HTML pages
         if (event.request.destination === 'document') {
-          return caches.match('/index.html');
+          return caches.match(BASE_PATH + 'index.html');
         }
       });
     })
