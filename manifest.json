@@ -2,7 +2,9 @@
   "name": "香港城市儀表板",
   "short_name": "HK Dashboard",
   "description": "香港全方位實時城市數據：天氣、交通、巴士、地鐵、急證室、公眾假期",
-  "start_url": "/index.html",
+  "scope": "/hk-dashboard/",
+  "start_url": "/hk-dashboard/index.html",
+  "id": "/hk-dashboard/",
   "display": "standalone",
   "background_color": "#0d1b2e",
   "theme_color": "#0d1b2e",
@@ -23,8 +25,8 @@
   ],
   "categories": ["utilities", "weather", "travel"],
   "shortcuts": [
-    { "name": "天氣",   "url": "/index.html#weather",   "description": "查看天氣" },
-    { "name": "急症室",   "url": "/index.html#health",        "description": "急症室資訊" },
-    { "name": "假期", "url": "/index.html#holidays",    "description": "公眾假期" }
+    { "name": "天氣",   "url": "/hk-dashboard/index.html#weather",   "description": "查看天氣" },
+    { "name": "急症室",   "url": "/hk-dashboard/index.html#health",        "description": "急症室資訊" },
+    { "name": "假期", "url": "/hk-dashboard/index.html#holidays",    "description": "公眾假期" }
   ]
 }
