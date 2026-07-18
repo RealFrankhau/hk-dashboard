@@ -387,6 +387,8 @@ function renderHead(isArrival) {
       <div style="display:flex;align-items:center;gap:var(--sp-2)">
         <span class="card-badge badge-live">● 實時</span>
         <span class="card-badge badge-source">HKIA</span>
+        <button onclick="Flights.refresh()" aria-label="重新載入航班資料"
+          style="background:var(--surface-2);border:1px solid var(--border);color:var(--text);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);font-size:var(--text-xs);font-weight:700;cursor:pointer">重新載入</button>
       </div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3);font-size:var(--text-xs);color:var(--text-muted)">

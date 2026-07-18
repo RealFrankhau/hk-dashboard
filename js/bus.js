@@ -8,12 +8,15 @@
 
 /* ══ PRESET STOPS ═══════════════════════════════════════════ */
 const PRESET_STOPS = [
-  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站(去程)',    route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },  
-  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站(去程)',    route:'S64C', serviceType:1, hint:'東涌(逸東)<>航膳東路(循環線)' },
-  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心(回程)',         route:'S64', serviceType:1, hint:'東涌(逸東)<>機場(循環線)' },
-  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心(回程)',         route:'S64C', serviceType:1, hint:'超級一號貨站<>東涌(逸東)' },
-  { operator:'KMB', id:'61D7306AC40C4FB8', label:'青衣碼頭總站',           route:'44', serviceType:1, hint:'往旺角東站' },
-  { operator:'KMB', id:'BE510511B0A7344E', label:'大南街',                route:'44', serviceType:1, hint:'往青衣邨' },
+  // 註:可選 `seq` 欄位用於循環線 — KMB API 在循環線場景下,
+  //     同一個 stop id 可能出現多次(seq=1,2,3…),seq 代表第 N 次到訪。
+  //     有指定 seq 時只取該 seq 的班次;未指定時預設取 seq 最小的班次。
+  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站(去程)',    route:'S64',  serviceType:1, seq:4, hint:'東涌(逸東)<>機場(循環線)' },
+  { operator:'KMB', id:'86FD7EFBB651F5CE', label:'東涌站巴士總站(去程)',    route:'S64C', serviceType:1, seq:4, hint:'東涌(逸東)<>航膳東路(循環線)' },
+  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心(回程)',         route:'S64',  serviceType:1, seq:21, hint:'東涌(逸東)<>機場(循環線)' },
+  { operator:'KMB', id:'7211E63DE150A10E', label:'空郵中心(回程)',         route:'S64C', serviceType:1, seq:9, hint:'超級一號貨站<>東涌(逸東)' },
+  { operator:'KMB', id:'61D7306AC40C4FB8', label:'青衣碼頭總站',           route:'44',   serviceType:1,            hint:'往旺角東站' },
+  { operator:'KMB', id:'BE510511B0A7344E', label:'大南街',                route:'44',   serviceType:1,            hint:'往青衣邨' },
 ];
 
 /* ══ CACHE ══════════════════════════════════════════════════ */
@@ -179,6 +182,18 @@ const Bus = (function() {
         const r = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${p.id}/${p.route}`);
         const d = await r.json();
         etas = d.data || [];
+      }
+
+      // 循環線處理:同一 stop id 可能有多個 seq (KMB API 在循環線下會回傳多筆)。
+      // 規則:有指定 p.seq → 只取該 seq;沒指定 → 預設只取 seq 最小的那些班次。
+      if (p.operator === 'KMB' && etas.length) {
+        const allSeqs = [...new Set(etas.map(e => Number(e.seq)).filter(n => Number.isFinite(n)))];
+        if (allSeqs.length) {
+          const targetSeq = (p.seq !== undefined && p.seq !== null)
+            ? Number(p.seq)
+            : Math.min(...allSeqs);
+          etas = etas.filter(e => Number(e.seq) === targetSeq);
+        }
       }
 
       // Group by dest
@@ -365,8 +380,11 @@ const BusSearch = (function() {
     const buttonsHtml = stops.map((s, i) => {
       const name = nameMap[s.stop] || null;
       const safeName = name ? name.replace(/"/g, '&quot;') : '';
+      // KMB route-stop API 的 `seq` 欄位代表循環線上該 stop 的第 N 次到訪。
+      // 將 seq 帶到按鈕的 data-seq,讓載入 ETA 時可以正確篩選。
+      const stopSeq = (s.seq !== undefined && s.seq !== null) ? String(s.seq) : '';
       const clickAttr = name
-        ? 'data-stop="' + s.stop + '" data-op="' + r.operator + '" data-route="' + r.route + '" data-dir="' + r.direction + '" data-name="' + safeName + '"'
+        ? 'data-stop="' + s.stop + '" data-op="' + r.operator + '" data-route="' + r.route + '" data-dir="' + r.direction + '" data-name="' + safeName + '" data-seq="' + stopSeq + '"'
         : 'disabled';
       return '<button class="stop-btn" ' + clickAttr + ' style="display:flex;width:100%;box-sizing:border-box;margin-bottom:12px;' + (!name ? 'opacity:.4;cursor:default' : '') + '">'
         + '<span class="stop-main" style="display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start;">'
@@ -412,7 +430,7 @@ const BusSearch = (function() {
   }
 
   /* ── Load ETA for stop ───────────────────────────────── */
-  async function loadETA(stopId, operator, route, serviceType, stopName, direction) {
+  async function loadETA(stopId, operator, route, serviceType, stopName, direction, seq) {
     const panel = document.getElementById('bus-eta-panel');
     if (!panel) return;
 
@@ -433,24 +451,44 @@ const BusSearch = (function() {
     // Scroll panel into view
     setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
 
-    await _fetchETA(stopId, operator, route, serviceType, stopName, direction, panel);
+    await _fetchETA(stopId, operator, route, serviceType, stopName, direction, panel, seq);
   }
 
-  async function _fetchETA(stopId, operator, route, serviceType, stopName, direction, panel) {
+  async function _fetchETA(stopId, operator, route, serviceType, stopName, direction, panel, seq) {
     try {
       let etas = [];
       if (operator === 'KMB') {
         const r = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stopId}/${route}/${serviceType}`);
         const d = await r.json();
-        etas = (d.data || []).slice(0, 5);
+        // 重要:不要在這裡 slice — KMB 循環線下,API 會回傳多個 seq 的混合班次,
+        // 若先 slice 再 seq 篩選,可能把目標 seq 的班次都砍掉。
+        etas = d.data || [];
       } else {
         const r = await fetch(`https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stopId}/${route}`);
         const d = await r.json();
-        etas = (d.data || []).slice(0, 4);
+        etas = d.data || [];
       }
+
+      // 循環線處理:KMB API 在循環線下,同一個 stop id 可能回傳多個 seq。
+      // 有指定 seq → 只取該 seq;沒指定 → 預設取 seq 最小的班次(起點出發)。
+      if (operator === 'KMB' && etas.length) {
+        const allSeqs = [...new Set(etas.map(e => Number(e.seq)).filter(n => Number.isFinite(n)))];
+        if (allSeqs.length) {
+          const targetSeq = (seq !== undefined && seq !== null && seq !== '')
+            ? Number(seq)
+            : Math.min(...allSeqs);
+          etas = etas.filter(e => Number(e.seq) === targetSeq);
+        }
+      }
+
+      // 篩選後再 limit — 確保使用者能看到該 seq 完整的班次(最多 5 班)
+      etas = etas.slice(0, 5);
 
       const now    = new Date().toLocaleTimeString('zh-HK', {hour12:false, hour:'2-digit', minute:'2-digit'});
       const dirLabel = direction === 'outbound' ? '往終點方向' : '往起點方向';
+      const seqLabel = (seq !== undefined && seq !== null && seq !== '')
+        ? ` · 第 ${seq} 次到訪`
+        : '';
 
       const headerHtml = `
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:8px">
@@ -458,10 +496,10 @@ const BusSearch = (function() {
             <div style="font-size:15px;font-weight:700">📍 ${stopName}</div>
             <div style="font-size:11px;color:var(--text-faint);margin-top:2px">
               <span class="tag ${operator==='KMB'?'tag-red':'tag-green'}" style="font-size:10px;vertical-align:middle">${operator}</span>
-              ${route} · ${dirLabel} · 更新 ${now}
+              ${route} · ${dirLabel}${seqLabel} · 更新 ${now}
             </div>
           </div>
-          <button onclick="BusSearch._refresh('${stopId}','${operator}','${route}','${serviceType}','${stopName}','${direction}')"
+          <button onclick="BusSearch._refresh('${stopId}','${operator}','${route}','${serviceType}','${stopName}','${direction}','${seq ?? ''}')"
             style="background:var(--primary);color:white;border-radius:8px;
                    padding:6px 12px;font-size:12px;font-weight:600;flex-shrink:0;white-space:nowrap">
             ↻ 更新
@@ -506,13 +544,13 @@ const BusSearch = (function() {
     }
   }
 
-  function _refresh(stopId, operator, route, serviceType, stopName, direction) {
+  function _refresh(stopId, operator, route, serviceType, stopName, direction, seq) {
     const panel = document.getElementById('bus-eta-panel');
     if (!panel) return;
     // Show updating indicator
     const refreshBtn = panel.querySelector('button');
     if (refreshBtn) refreshBtn.textContent = '更新中…';
-    _fetchETA(stopId, operator, route, serviceType, stopName, direction, panel);
+    _fetchETA(stopId, operator, route, serviceType, stopName, direction, panel, seq);
   }
 
   return { search, selectDir, loadETA, _refresh };
@@ -799,7 +837,9 @@ document.addEventListener('click', function(e) {
     const route  = kmbBtn.dataset.route;
     const dir    = kmbBtn.dataset.dir;
     const name   = kmbBtn.dataset.name;
-    if (stopId && op && route) BusSearch.loadETA(stopId, op, route, '1', name, dir);
+    // 循環線:KMB route-stop 端點回傳的 seq 代表該 stop 在循環線上的第 N 次到訪
+    const seq    = kmbBtn.dataset.seq || '';
+    if (stopId && op && route) BusSearch.loadETA(stopId, op, route, '1', name, dir, seq);
     return;
   }
   // GMB stop buttons
