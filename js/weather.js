@@ -542,6 +542,45 @@ function renderWarningInfo(details) {
   els.forEach(e => e.innerHTML = html);
 }
 
+/* ── Work Heat Stress Warning (HSWW) ────────────────────────── */
+async function fetchHSWW() {
+  try {
+    const r = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/hsww.php?lang=tc');
+    const data = await r.json();
+    const el = document.getElementById('h-top-hsww');
+    if (!el) return;
+
+    const hsww = data?.hsww;
+    const level = hsww?.warningLevel;
+
+    if (!level) {
+      el.innerHTML = '';
+      return;
+    }
+
+    const ICON_MAP = {
+      'AMBER': './assets/icons/amber.gif',
+      'RED':   './assets/icons/red.gif',
+      'BLACK': './assets/icons/black.gif',
+    };
+
+    const iconUrl = ICON_MAP[level] || '';
+    const desc = hsww.desc || '';
+
+    el.innerHTML = iconUrl
+      ? `<img src="${iconUrl}" alt="工作暑熱警告 ${level}" title="${desc}" style="width:50px;height:50px;object-fit:contain;cursor:help;vertical-align:middle;">`
+      : '';
+  } catch (e) {
+    const el = document.getElementById('h-top-hsww');
+    if (el) el.innerHTML = '';
+  }
+}
+
+// Also run on init
+fetchHSWW();
+// Re-check every 5 minutes
+setInterval(fetchHSWW, 300000);
+
 /* ── Weather Warning Banner ─────────────────────────────────── */
 async function fetchWarningBanner() {
   try {
@@ -650,6 +689,7 @@ window.Weather = {
       fetchForecast(),
       fetchWarnsum(),
       fetchWarningBanner(),
+      fetchHSWW(),
     ]);
   }
 };
