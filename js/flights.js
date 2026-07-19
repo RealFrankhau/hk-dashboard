@@ -10,7 +10,7 @@
 
 'use strict';
 
-const FLIGHTS_PER_PAGE = 15;
+const FLIGHTS_PER_PAGE = 10;
 // CORS_PROXY_BASE is defined in core.js
 const HKIA_API_BASE   = 'https://www.hongkongairport.com/flightinfo-rest/rest/flights';
 
@@ -433,9 +433,9 @@ function renderDepartureRow(f) {
       <td class="ft-flight" ${tooltip ? `title="代碼共享：${tooltip}"` : ''}>
         ${formatFlightNumbers(f.flight)}
       </td>
-      <td class="ft-center">${f.terminal || '—'}</td>
-      <td class="ft-center">${f.aisle ? f.aisle + '&nbsp;行' : '—'}</td>
-      <td class="ft-center">${f.gate ? `<span class="tag tag-yellow">${f.gate}</span>` : '—'}</td>
+      <td class="ft-center" style="font-family:var(--font-mono);font-weight:700">${f.terminal || '—'}</td>
+      <td class="ft-center" style="font-family:var(--font-mono);font-weight:700">${f.aisle ? f.aisle + '&nbsp;行' : '—'}</td>
+      <td class="ft-center" style="font-family:var(--font-mono);font-weight:700">${f.gate ? `<span class="tag tag-yellow">${f.gate}</span>` : '—'}</td>
       <td class="ft-status"><span class="tag ${status.tag}">${status.label}</span></td>
     </tr>
   `;
@@ -466,8 +466,8 @@ function renderArrivalRow(f) {
         <div class="ft-dest-name-en">${originCitiesEn}</div>
         <div class="ft-dest-code">${originCodes}</div>
       </td>
-      <td class="ft-center">${f.hall || '—'}</td>
-      <td class="ft-center">${f.baggage ? `<span class="tag tag-yellow">${f.baggage}</span>` : '—'}</td>
+      <td class="ft-center" style="font-family:var(--font-mono);font-weight:700">${f.hall || '—'}</td>
+      <td class="ft-center" style="font-family:var(--font-mono);font-weight:700">${f.baggage ? `<span class="tag tag-yellow">${f.baggage}</span>` : '—'}</td>
       <td class="ft-status"><span class="tag ${status.tag}">${status.label}</span></td>
     </tr>
   `;

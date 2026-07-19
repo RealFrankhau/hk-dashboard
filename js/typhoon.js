@@ -313,18 +313,20 @@ function showEmptyState(visible) {
 }
 
 /* ── Main fetch + render ───────────────────────────────────── */
-async function fetchTyphoonData() {
+async function fetchTyphoonData(forceRefresh = false) {
   const mapEl = document.getElementById('typhoon-map');
   const infoEl = document.getElementById('typhoon-info-table');
   const statusEl = document.getElementById('typhoon-status');
   const selectorEl = document.getElementById('tc-selector');
   if (!mapEl) return;
 
-  // Try loading from cache first
-  const cachedList = cacheGet('tc_list');
-  if (cachedList && cachedList.entries.length > 0) {
-    // Show cached data immediately while fetching fresh
-    loadTcFromList(cachedList.entries, cachedList.selectedIndex || 0);
+  // Try loading from cache first (skip if forceRefresh)
+  if (!forceRefresh) {
+    const cachedList = cacheGet('tc_list');
+    if (cachedList && cachedList.entries.length > 0) {
+      // Show cached data immediately while fetching fresh
+      loadTcFromList(cachedList.entries, cachedList.selectedIndex || 0, false);
+    }
   }
 
   if (statusEl) statusEl.textContent = '正在載入熱帶氣旋資料…';
@@ -366,8 +368,8 @@ async function fetchTyphoonData() {
       loadTcFromList(entries, idx);
     };
 
-    // Load first TC
-    await loadTcFromList(entries, 0);
+    // Load first TC (forceRefresh bypasses track cache)
+    await loadTcFromList(entries, 0, forceRefresh);
 
   } catch (e) {
     console.error('Typhoon fetch error:', e);
@@ -380,7 +382,7 @@ async function fetchTyphoonData() {
 }
 
 /* ── Load a specific TC from the entries list ──────────────── */
-async function loadTcFromList(entries, index) {
+async function loadTcFromList(entries, index, forceRefresh = false) {
   const mapEl = document.getElementById('typhoon-map');
   const infoEl = document.getElementById('typhoon-info-table');
   const statusEl = document.getElementById('typhoon-status');
@@ -397,9 +399,9 @@ async function loadTcFromList(entries, index) {
   if (statusEl) statusEl.textContent = `正在載入 ${tc.cn} ${tc.en} 的路徑資料…`;
 
   try {
-    // Check cache for this TC's track data
+    // Check cache for this TC's track data (skip if forceRefresh)
     const cacheKey = 'track_' + tc.id;
-    let data = cacheGet(cacheKey);
+    let data = forceRefresh ? null : cacheGet(cacheKey);
 
     if (!data) {
       const trackRes = await fetchWithFallback(tc.url);
@@ -826,5 +828,5 @@ function renderTyphoonInfo(data, cnName, enName, tcId) {
 
 /* ── Public API ─────────────────────────────────────────────── */
 window.Typhoon = {
-  refresh: fetchTyphoonData,
+  refresh: () => fetchTyphoonData(true),
 };

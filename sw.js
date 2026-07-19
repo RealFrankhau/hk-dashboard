@@ -96,6 +96,7 @@ self.addEventListener('fetch', event => {
     'www.ha.org.hk',
     'api.allorigins.win',
     'tdcctv.data.one.gov.hk',
+    'hkdashboard.frankhau.workers.dev',
   ].some(host => url.hostname.includes(host));
 
   if (isAPI) {
