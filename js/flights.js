@@ -153,7 +153,7 @@ const CITY_NAMES = {
   'ZHA': { zh: '湛江', en: 'Zhanjiang' }, 'HYN': { zh: '台州', en: 'Taizhou' }, 'WNZ': { zh: '溫州', en: 'Wenzhou' }, 'JHG': { zh: '西雙版納', en: 'Xishuangbanna' },
   'DLU': { zh: '大理', en: 'Dali' }, 'BHY': { zh: '北海', en: 'Beihai' }, 'NGB': { zh: '寧波', en: 'Ningbo' }, 'YNT': { zh: '煙台', en: 'Yantai' },
   'TPE': { zh: '台北', en: 'Taipei' }, 'TSA': { zh: '台北松山', en: 'Taipei Songshan' }, 'KHH': { zh: '高雄', en: 'Kaohsiung' }, 'TNN': { zh: '台南', en: 'Tainan' },
-  'MFM': { zh: '澳門', en: 'Macau' }, 'TFU': { zh: '成都天府', en: 'Chengdu Tianfu' },
+  'MFM': { zh: '澳門', en: 'Macau' }, 'TFU': { zh: '成都天府', en: 'Chengdu Tianfu' }, 'WUX': { zh: '無錫', en: 'Wuxi' },
   // Japan
   'NRT': { zh: '東京成田', en: 'Tokyo Narita' }, 'HND': { zh: '東京羽田', en: 'Tokyo Haneda' }, 'KIX': { zh: '大阪關西', en: 'Osaka Kansai' }, 'ITM': { zh: '大阪伊丹', en: 'Osaka Itami' },
   'NGO': { zh: '名古屋', en: 'Nagoya' }, 'FUK': { zh: '福岡', en: 'Fukuoka' }, 'CTS': { zh: '札幌', en: 'Sapporo' }, 'OKA': { zh: '沖繩', en: 'Okinawa' },
@@ -507,7 +507,7 @@ function renderDepartures() {
         <thead>
           <tr>
             <th>時間 Time</th>
-            <th>目的地 Destination</th>
+            <th class="th-dest">目的地 Destination</th>
             <th>航空公司 Airline</th>
             <th>航班 Flight</th>
             <th>客運大樓 Terminal</th>
@@ -619,6 +619,9 @@ function goPage(isArrival, page) {
       position: sticky;
       top: 0;
       white-space: nowrap;
+    }
+    .ft-table thead th.th-dest {
+      font-size: var(--text-sm);
     }
     .ft-table tbody tr {
       transition: background 0.12s;

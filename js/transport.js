@@ -58,6 +58,7 @@ const MTR_STATIONS = [
   {line:'ISL',sta:'TAK',lineName:'港島綫',staName:'太古'},
   {line:'ISL',sta:'SWH',lineName:'港島綫',staName:'西灣河'},
   {line:'ISL',sta:'SKW',lineName:'港島綫',staName:'筲箕灣'},
+  {line:'ISL',sta:'HFC',lineName:'港島綫',staName:'杏花邨'},
   {line:'ISL',sta:'CHW',lineName:'港島綫',staName:'柴灣'},
   {line:'EAL',sta:'ADM',lineName:'東鐵綫',staName:'金鐘'},
   {line:'EAL',sta:'EXC',lineName:'東鐵綫',staName:'會展'},

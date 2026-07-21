@@ -98,6 +98,7 @@ async function loadAllData() {
     safeRun('SunFerry',     () => SunFerry.refresh()),
     safeRun('HKKF',         () => HKKF.refresh()),
     safeRun('Flights',      () => Flights.refresh()),
+    safeRun('FlightBoard',  () => FlightBoard.init()),
   ]);
 }
 
@@ -179,6 +180,7 @@ window.showPage = function(name) {
       break;
     case 'airport':
       safeRun('Flights', () => Flights.refresh());
+      safeRun('FlightBoard', () => FlightBoard.refresh());
       break;
     case 'cruise':
       safeRun('HKKF',     () => HKKF.refresh());

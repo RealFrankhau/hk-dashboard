@@ -219,6 +219,42 @@
         </div>
         <div id="h-rain" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:var(--sp-2)"></div>
       </div>
+      
+      <!-- ══ FLIGHT SEARCH / DISPLAY BOARD CARDS ══ -->
+        <!-- Departure Flight Board Card -->
+        <div class="card" style="grid-column:span 2">
+          <div class="card-head">
+            <div>
+              <div class="card-title">航班搜尋 <span style="font-weight:500;color:var(--text-muted);font-size:var(--text-sm)">Flight Search</span></div>
+              <div class="card-sub">輸入航班編號搜尋離港航班</div>
+            </div>
+          </div>
+          <div class="fb-board-wrap">
+            <div class="fb-search-row">
+              <input type="text" id="fb-search-departure" placeholder="搜尋離港航班 e.g. CI921, MU9658…" autocomplete="off">
+              <button id="fb-search-btn-departure">搜尋</button>
+            </div>
+            <div id="flight-board-departure"></div>
+          </div>
+        </div>
+
+         <!-- Arrival Flight Board Card -->
+        <div class="card" style="grid-column:span 2">
+          <div class="card-head">
+            <div>
+              <div class="card-title">航班搜尋 <span style="font-weight:500;color:var(--text-muted);font-size:var(--text-sm)">Flight Search</span></div>
+              <div class="card-sub">輸入航班編號搜尋抵港航班</div>
+            </div>
+          </div>
+          <div class="fb-board-wrap">
+            <div class="fb-search-row">
+              <input type="text" id="fb-search-arrival" placeholder="搜尋抵港航班 e.g. HX633, HX1706…" autocomplete="off">
+              <button id="fb-search-btn-arrival">搜尋</button>
+            </div>
+            <div id="flight-board-arrival"></div>
+          </div>
+        </div>
+
 
 
 </div>
@@ -864,8 +900,8 @@
 
   <!-- ══ AIRPORT PAGE ══ -->
    <div id="page-airport" class="page">
-     <div class="dash-grid" style="grid-template-columns:1fr">
-      <div class="section-hdr">
+      <div class="dash-grid g2">
+      <div class="section-hdr" style="grid-column:span 2">
         <div class="section-hdr-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>
         </div>
@@ -875,8 +911,10 @@
         </div>
       </div>
 
+      <!-- ══ FLIGHT SEARCH / DISPLAY BOARD CARDS ══ -->
+
       <!-- Departure Flights Card -->
-      <div class="card" style="grid-column:span 1">
+      <div class="card" style="grid-column:span 2">
         <div id="flights-departure-content">
           <div class="card-head">
             <div>
@@ -897,7 +935,7 @@
       </div>
 
       <!-- Arrival Flights Card -->
-      <div class="card" style="grid-column:span 1">
+      <div class="card" style="grid-column:span 2">
         <div id="flights-arrival-content">
           <div class="card-head">
             <div>
@@ -954,6 +992,7 @@
 <script src="js/sunferry.js"></script>
 <script src="js/hkkf.js"></script>
 <script src="js/flights.js"></script>
+<script src="js/flightBoard.js"></script>
 <script src="js/app.js"></script>
 <script>
   // Register Service Worker (PWA)
