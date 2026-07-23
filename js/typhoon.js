@@ -441,6 +441,93 @@ async function loadTcFromList(entries, index, forceRefresh = false) {
 /* ── Render Leaflet map ────────────────────────────────────── */
 let typhoonMapInstance = null;
 
+/* ── Basemap layers (with Traditional Chinese place names) ──── */
+/* Reference: https://github.com/letswritetw/letswrite-leaflet-osm-basic
+   OpenStreetMap's official Mapnik tile server renders place labels
+   in the local language. For Hong Kong, Macau, Taiwan, Mainland
+   China, Japan, Korea, the Philippines and Vietnam, that means
+   正體繁體中文 / 简体中文 / 日本語 / 한국어 / etc. all show up natively
+   without any client-side translation.
+
+   The OSM tile usage policy (https://operations.osmfoundation.org/policies/tiles/)
+   requires a User-Agent and prohibits heavy commercial use. For a
+   personal dashboard this is fine; for production traffic use a
+   CDN-backed provider such as CartoDB / Stadia / Mapbox. */
+const TC_BASE_LAYERS = {
+  /* Primary: OSM Mapnik — local-language place labels (繁體中文 in HK) */
+  'OSM 地圖 (中文)': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    subdomains: 'abc',
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 貢獻者 · 中文標籤由 OSM 社群翻譯',
+  }),
+  /* German-style OSM layer — same OSM data as Mapnik, but the
+     rendered labels prefer German. Other languages still appear
+     where the German name is not registered (HK / TW / JP / KR /
+     CN remain in their local language). Served by FOSSGIS e.V. */
+  'OpenStreetMap.DE': L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    subdomains: 'abc',
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openstreetmap.de/">FOSSGIS e.V.</a>',
+  }),
+  /* Light / pale background WITH English place labels. We overlay
+     a small set of Traditional Chinese sea labels on top so the
+     map stays readable for the West-Pacific / South-China-Sea
+     context. (Previously this used `light_nolabels`, which by
+     design has no labels at all — the option name said "英文"
+     but nothing was actually shown. `light_all` fixes that.) */
+  '淺色底圖 (英文 + 中文標籤)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18,
+    subdomains: 'abcd',
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://carto.com/attributions">CARTO</a>',
+  }),
+};
+
+/* ── Sea-area labels (always shown on every basemap) ───────── */
+/* OpenStreetMap renders most of these in their local name already,
+   but the offshore labels (南海, 菲律賓海, 太平洋 …) are not always
+   present at the zoom levels HKO TC track maps use. We overlay a
+   short, fixed list of 中英對照 sea / channel labels so the map is
+   consistently informative regardless of the chosen basemap. */
+const CN_SEA_LABELS = [
+  { zh: '南海',          en: 'South China Sea',  lat: 12.0,  lon: 113.0 },
+  { zh: '南中國海',      en: 'South China Sea',  lat: 10.5,  lon: 115.5 },
+  { zh: '東海',          en: 'East China Sea',   lat: 28.0,  lon: 124.5 },
+  { zh: '太平洋',        en: 'Pacific Ocean',    lat: 22.0,  lon: 135.0 },
+  { zh: '菲律賓海',      en: 'Philippine Sea',   lat: 18.0,  lon: 130.0 },
+  { zh: '巴士海峽',      en: 'Bashi Channel',    lat: 21.0,  lon: 121.2 },
+  { zh: '呂宋海峽',      en: 'Luzon Strait',     lat: 19.5,  lon: 121.5 },
+  { zh: '臺灣海峽',      en: 'Taiwan Strait',    lat: 24.5,  lon: 119.5 },
+  { zh: '瓊州海峽',      en: 'Qiongzhou Strait', lat: 20.2,  lon: 110.3 },
+];
+
+function addChinesePlaceLabels(map) {
+  CN_SEA_LABELS.forEach(p => {
+    const html = `<div style="
+      font-size:12px;
+      font-weight:600;
+      font-style:italic;
+      color:#0e7490;
+      text-shadow:
+        -1px -1px 0 rgba(255,255,255,0.95),
+         1px -1px 0 rgba(255,255,255,0.95),
+        -1px  1px 0 rgba(255,255,255,0.95),
+         1px  1px 0 rgba(255,255,255,0.95),
+         0 0 4px rgba(255,255,255,0.9);
+      white-space:nowrap;
+      letter-spacing:0.5px;
+      pointer-events:none;
+      text-align:center;
+    ">${p.zh}</div>`;
+    const icon = L.divIcon({
+      className: 'tc-cn-label',
+      html,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
+    });
+    L.marker([p.lat, p.lon], { icon, interactive: false }).addTo(map);
+  });
+}
+
 function renderTyphoonMap(data, cnName, enName, tcId) {
   const mapEl = document.getElementById('typhoon-map');
   if (!mapEl) return;
@@ -464,18 +551,40 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     return;
   }
 
-  // Initialize map with CartoDB light tiles
+  // Initialize map with Chinese-friendly base tiles.
+  // See TC_BASE_LAYERS above — the default layer is the official
+  // OpenStreetMap Mapnik basemap, which renders place labels in the
+  // local language (繁體中文 for HK / Macau / Taiwan, 简体中文 for
+  // Mainland China, 日本語 for Japan, 한국어 for Korea …). The layer
+  // control in the top-right lets the user pick a different style.
   const map = L.map(mapEl, {
     zoomControl: true,
-    attributionControl: false,
+    attributionControl: true,
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
+  // Add all basemap options to the layer control, then activate the
+  // default (OSM Mapnik with local-language place names).
+  const baseLayersForControl = {};
+  Object.keys(TC_BASE_LAYERS).forEach(name => {
+    baseLayersForControl[name] = TC_BASE_LAYERS[name];
+  });
+  L.control.layers(baseLayersForControl, null, {
+    position: 'topright',
+    collapsed: true,
   }).addTo(map);
+
+  // Activate the default layer.
+  TC_BASE_LAYERS['OSM 地圖 (中文)'].addTo(map);
 
   const bounds = L.latLngBounds(allPoints);
   map.fitBounds(bounds, { padding: [40, 40] });
+
+  // ── Place-name labels in Traditional Chinese ──
+  // The OpenStreetMap basemap already shows 中文 place names for HK,
+  // TW, CN, JP, KR etc. We only need to overlay a small set of
+  // offshore / sea-area labels that OSM does not always render at
+  // the zoom levels used for TC track maps.
+  addChinesePlaceLabels(map);
 
   // ── 1. Potential Track Area polygon ──
   if (data.polygonCoords.length >= 3) {

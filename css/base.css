@@ -444,6 +444,19 @@ p, li { text-wrap: pretty; }
   height: min(500px, 55vh);
 }
 
+/* Chinese place-name labels overlaid on the TC track map.
+   Strip the default Leaflet divIcon background/border so the
+   text-shadow halo is the only "background" visible on the map. */
+.tc-cn-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.tc-cn-label > div {
+  background: transparent !important;
+  border: none !important;
+}
+
 /* TC info table → card layout on narrow screens */
 @media (max-width: 700px) {
   .tc-info-table thead { display: none; }

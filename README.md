@@ -60,6 +60,7 @@ A comprehensive, real-time open-source city dashboard for Hong Kong using 100% g
 
 ### ✈️ 航班 Flights
 - **航班資訊** — 離港及抵航班資訊
+- **航班搜尋** — 輸入航班編號，自動顯示當日的離港及抵港航班
 
 
 
@@ -152,8 +153,11 @@ hk-dashboard/
     ├── bus.js          # 巴士 ETA（KMB/CTB/GMB）
     ├── tides.js        # 潮汐 + 地震 + 天氣展望
     ├── typhoon.js      # 颱風資訊及路徑
+    ├── hkkf.js         # 港九小輪有限公司船期資訊
+    ├── sunferry.js     # 新渡輪船期資訊
     ├── health.js       # 急症室等候時間
-    ├── flights.js      # 香港國際機場抵港及離港航班資訊    
+    ├── flights.js      # 香港國際機場抵港及離港航班資訊
+    ├── flightBoard.js  # 香港國際機場抵港及離港航班資訊搜尋器
     ├── holidays.js     # 公眾假期 + 節氣
     └── app.js          # 主入口（初始化 + 自動刷新）
 ```
@@ -167,6 +171,7 @@ hk-dashboard/
 | Pure HTML/CSS/JS | 零依賴，無需構建工具 |
 | [Leaflet.js](https://leafletjs.com/) | 互動地圖（CDN） |
 | [CartoDB Tiles](https://carto.com/) | 深色/淺色地圖底圖 |
+| [OpenStreetMap](https://www.openstreetmap.org/) | 地圖中文地名翻釋 |
 | Service Worker | PWA 離線支援 |
 | CSS Custom Properties | 深色/淺色主題切換 |
 | Google Fonts | Noto Sans TC + Inter + JetBrains Mono |
@@ -199,6 +204,7 @@ MIT License — 免費使用、修改、分發。
 - [醫院管理局 HA](https://www.ha.org.hk/) — 急症室數據
 - [香港鐵路 MTR](https://opendata.mtr.com.hk/) — 班次數據
 - [Leaflet.js](https://leafletjs.com/) — 開源地圖庫
+
 
 ---
 
