@@ -707,39 +707,67 @@ function renderTyphoonMap(data, cnName, enName, tcId) {
     }
   });
 
-  // ── 8. Legend ──
+  // ── 8. Legend (collapsible) ──
   const legend = L.control({ position: 'bottomright' });
   legend.onAdd = function() {
     const div = L.DomUtil.create('div', 'tc-legend');
     div.style.cssText = `
       background:rgba(255,255,255,0.95);
       color:#333;
-      padding:8px 12px;
+      padding:6px 10px;
       border-radius:6px;
       font-size:11px;
       line-height:1.8;
       border:1px solid rgba(0,0,0,0.15);
       box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      min-width:90px;
     `;
+
+    const hasPolygon = data.polygonCoords.length >= 3;
+    const polygonRow = hasPolygon
+      ? '<div><span style="display:inline-block;width:12px;height:3px;background:#f59e0b;margin-right:6px;vertical-align:middle"></span> 可能移動範圍</div>'
+      : '';
+
     div.innerHTML = `
-      <div style="font-weight:700;margin-bottom:4px">圖例 Legend</div>
-      <div><span style="display:inline-block;width:12px;height:3px;background:#9ca3af;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
-      <div><span style="display:inline-block;width:12px;height:3px;background:linear-gradient(to right,#22c55e 0,#22c55e 16%,#3b82f6 16%,#3b82f6 33%,#ef4444 33%,#ef4444 50%,#ec4899 50%,#ec4899 66%,#a855f7 66%,#a855f7 100%);margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track (按強度著色)</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#9ca3af;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
-      <div style="margin-top:4px;font-weight:600">與香港距離 Distance from HK</div>
-      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #dc2626;margin-right:6px;vertical-align:middle"></span> 200 公里範圍</div>
-      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #b45309;margin-right:6px;vertical-align:middle"></span> 400 公里範圍</div>
-      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #16a34a;margin-right:6px;vertical-align:middle"></span> 600 公里範圍</div>
-      <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #2563eb;margin-right:6px;vertical-align:middle"></span> 800 公里範圍</div>
-      <div style="margin-top:4px;font-weight:600">強度 Intensity</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#333;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶低氣壓</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶風暴</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強烈熱帶風暴</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 颱風</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#ec4899;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強颱風</div>
-      <div><span style="display:inline-block;width:8px;height:8px;background:#a855f7;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 超強颱風</div>
-      ${data.polygonCoords.length >= 3 ? '<div style="margin-top:4px"><span style="display:inline-block;width:12px;height:3px;background:#f59e0b;margin-right:6px;vertical-align:middle"></span> 可能移動範圍</div>' : ''}
+      <div class="tc-legend-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none;font-weight:700;">
+        <span>圖例 Legend</span>
+        <span class="tc-legend-toggle" style="font-size:13px;line-height:1;font-weight:700;transition:transform .2s ease;display:inline-block;">▼</span>
+      </div>
+      <div class="tc-legend-body" style="display:none;margin-top:4px;">
+        <div><span style="display:inline-block;width:12px;height:3px;background:#9ca3af;margin-right:6px;vertical-align:middle"></span> 過去路徑 Past Track</div>
+        <div><span style="display:inline-block;width:12px;height:3px;background:linear-gradient(to right,#22c55e 0,#22c55e 16%,#3b82f6 16%,#3b82f6 33%,#ef4444 33%,#ef4444 50%,#ec4899 50%,#ec4899 66%,#a855f7 66%,#a855f7 100%);margin-right:6px;vertical-align:middle"></span> 預測路徑 Forecast Track (按強度著色)</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#9ca3af;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 過去位置 Past Position</div>
+        <div style="margin-top:4px;font-weight:600">與香港距離 Distance from HK</div>
+        <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #dc2626;margin-right:6px;vertical-align:middle"></span> 200 公里範圍</div>
+        <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #b45309;margin-right:6px;vertical-align:middle"></span> 400 公里範圍</div>
+        <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #16a34a;margin-right:6px;vertical-align:middle"></span> 600 公里範圍</div>
+        <div><span style="display:inline-block;width:12px;height:1px;border-top:1px solid #2563eb;margin-right:6px;vertical-align:middle"></span> 800 公里範圍</div>
+        <div style="margin-top:4px;font-weight:600">強度 Intensity</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#333;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶低氣壓</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 熱帶風暴</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強烈熱帶風暴</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 颱風</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#ec4899;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 強颱風</div>
+        <div><span style="display:inline-block;width:8px;height:8px;background:#a855f7;border-radius:50%;margin-right:6px;vertical-align:middle"></span> 超強颱風</div>
+        ${polygonRow}
+      </div>
     `;
+
+    // Wire up collapse / expand toggle
+    const header = div.querySelector('.tc-legend-header');
+    const body = div.querySelector('.tc-legend-body');
+    const toggle = div.querySelector('.tc-legend-toggle');
+    header.addEventListener('click', () => {
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'block';
+      toggle.textContent = isOpen ? '▼' : '─';
+      toggle.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(0deg)';
+    });
+
+    // Prevent map drag/zoom when interacting with legend
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
+
     return div;
   };
   legend.addTo(map);
